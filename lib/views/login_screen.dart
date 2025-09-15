@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sitikap/extensions/extensions.dart';
 import 'package:sitikap/utils/colors.dart';
 import 'package:sitikap/views/register_screen.dart';
+import 'package:sitikap/widget/botnav.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -97,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       onPressed: () {
-                        // TODO: Implement login logic
+                        context.push(FloatingNavBarExample());
                       },
                       child: const Text(
                         "Login",

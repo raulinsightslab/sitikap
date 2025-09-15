@@ -27,10 +27,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
           ),
-
           // Overlay warna biar teks lebih jelas
           Container(color: AppColors.primaryDarkBlue.withOpacity(0.7)),
-
           // Konten Utama
           SafeArea(
             child: Padding(
@@ -46,10 +44,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       height: 90,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
 
                   // Judul
-                  const Text(
+                  Text(
                     "SiTiKAP",
                     style: TextStyle(
                       fontSize: 32,
@@ -58,7 +56,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       letterSpacing: 2,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
 
                   // Tagline
                   Text(
@@ -68,7 +66,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       color: AppColors.neutralWhite.withOpacity(0.9),
                     ),
                   ),
-                  const SizedBox(height: 60),
+                  SizedBox(height: 60),
 
                   // Tombol Login
                   // Tombol Login dengan Gradient
@@ -102,7 +100,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  SizedBox(height: 30),
 
                   // Tombol Register
                   SizedBox(
@@ -116,7 +114,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                       ),
                       onPressed: () {
-                        context.push(LoginScreen());
+                        context.push(RegisterScreen());
                       },
                       child: const Text(
                         "Register",
@@ -128,10 +126,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  SizedBox(height: 30),
 
                   // Footer
-                  const Text(
+                  Text(
                     "v1.0 • Powered by PPKD",
                     style: TextStyle(color: Colors.white70, fontSize: 12),
                   ),
