@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:sitikap/views/home_screen.dart';
 import 'package:sitikap/views/login_screen.dart';
 import 'package:sitikap/views/onboarding_screen.dart';
 import 'package:sitikap/views/splash_screen.dart';
+import 'package:sitikap/widget/botnav.dart';
 
 void main() {
   runApp(const MyApp());
@@ -25,8 +25,9 @@ class MyApp extends StatelessWidget {
         OnboardingScreen.id: (context) => OnboardingScreen(),
         LoginScreen.id: (context) => LoginScreen(),
         SplashScreen.id: (context) => SplashScreen(),
-        HomeScreen.id: (context) => HomeScreen(),
+        FloatingNavBarExample.id: (context) => FloatingNavBarExample(),
       },
+      // home: FloatingNavBarExample(),
     );
   }
 }

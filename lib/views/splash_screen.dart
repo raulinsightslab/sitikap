@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:sitikap/extensions/extensions.dart';
+import 'package:sitikap/local/shared_preferenced.dart';
 import 'package:sitikap/views/home_screen.dart';
 import 'package:sitikap/views/login_screen.dart';
-import 'package:sitikap/views/shared_preferenced.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

@@ -1,94 +1,93 @@
 import 'package:flutter/material.dart';
-import 'package:sitikap/utils/colors.dart';
-import 'package:sitikap/views/home_screen.dart'; // pastikan path sesuai
+import 'package:sitikap/views/home_screen.dart';
 
 class FloatingNavBarExample extends StatefulWidget {
   const FloatingNavBarExample({super.key});
+  static const id = "/botnav";
 
   @override
   State<FloatingNavBarExample> createState() => _FloatingNavBarExampleState();
 }
 
 class _FloatingNavBarExampleState extends State<FloatingNavBarExample> {
-  int _selectedIndex = 0;
+  int currentPage = 0;
 
-  // daftar halaman sesuai navbar
   final List<Widget> _pages = [
-    const HomeScreen(), // ini manggil HomeScreen
-    const Center(child: Text("Riwayat")),
-    const Center(child: Text("Pesan")),
-    const Center(child: Text("Profil")),
+    const HomeScreen(),
+    const Center(child: Text("Riwayat", style: TextStyle(fontSize: 24))),
+    const Center(child: Text("Pesan", style: TextStyle(fontSize: 24))),
+    const Center(child: Text("Izin", style: TextStyle(fontSize: 24))),
+    const Center(child: Text("Profil", style: TextStyle(fontSize: 24))),
   ];
+
+  void _handleIndexChanged(int index) {
+    setState(() {
+      currentPage = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
-      body: _pages[_selectedIndex], // tampilkan sesuai index
+      body: _pages[currentPage],
 
+      // FAB fingerprint
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: AppColors.blue,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.fingerprint, size: 32, color: Colors.white),
+        onPressed: () {
+          _handleIndexChanged(2); // index fingerprint (tengah)
+        },
+        backgroundColor: Colors.white,
+        shape: CircleBorder(),
+        child: Icon(Icons.fingerprint, color: Colors.black, size: 30),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
-      bottomNavigationBar: Container(
-        height: 65,
-        margin: const EdgeInsets.only(left: 16, right: 16, bottom: 25),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: BottomAppBar(
-            shape: const CircularNotchedRectangle(),
-            notchMargin: 8,
-            color: AppColors.neutralWhite,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  iconSize: 28,
-                  icon: Icon(
-                    Icons.home,
-                    color: _selectedIndex == 0 ? AppColors.blue : Colors.grey,
-                  ),
-                  onPressed: () => setState(() => _selectedIndex = 0),
+      // BottomAppBar melayang dengan notch
+      bottomNavigationBar: BottomAppBar(
+        color: Colors.white.withOpacity(0.9),
+        elevation: 10,
+        shape: CircularNotchedRectangle(),
+        notchMargin: 8.0,
+        child: SizedBox(
+          height: 60,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              IconButton(
+                icon: Icon(
+                  Icons.home_outlined,
+                  size: 30,
+                  color: currentPage == 0 ? Colors.black : Colors.grey,
                 ),
-                IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  iconSize: 28,
-                  icon: Icon(
-                    Icons.history,
-                    color: _selectedIndex == 1 ? AppColors.blue : Colors.grey,
-                  ),
-                  onPressed: () => setState(() => _selectedIndex = 1),
+                onPressed: () => _handleIndexChanged(0),
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.history,
+                  size: 30,
+                  color: currentPage == 1 ? Colors.black : Colors.grey,
                 ),
-                const SizedBox(width: 40), // ruang buat FAB
-                IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  iconSize: 28,
-                  icon: Icon(
-                    Icons.mail_outline,
-                    color: _selectedIndex == 2 ? AppColors.blue : Colors.grey,
-                  ),
-                  onPressed: () => setState(() => _selectedIndex = 2),
+                onPressed: () => _handleIndexChanged(1),
+              ),
+              SizedBox(width: 40), // spasi buat FAB
+              IconButton(
+                icon: Icon(
+                  Icons.mail_outline_outlined,
+                  size: 30,
+                  color: currentPage == 3 ? Colors.black : Colors.grey,
                 ),
-                IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  iconSize: 28,
-                  icon: Icon(
-                    Icons.person_outline,
-                    color: _selectedIndex == 3 ? AppColors.blue : Colors.grey,
-                  ),
-                  onPressed: () => setState(() => _selectedIndex = 3),
+                onPressed: () => _handleIndexChanged(3),
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.person_outline,
+                  size: 30,
+                  color: currentPage == 4 ? Colors.black : Colors.grey,
                 ),
-              ],
-            ),
+                onPressed: () => _handleIndexChanged(4),
+              ),
+            ],
           ),
         ),
       ),

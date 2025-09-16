@@ -84,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      "Kehadiran Hari Ini",
+                      "Jl. Karet Pasar Baru Barat, Kec Tanah Abang, Kota Jakarta Pusat ",
                       style: TextStyle(fontSize: 16, color: Colors.black54),
                     ),
                     const SizedBox(height: 8),
