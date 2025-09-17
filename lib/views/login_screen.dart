@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:sitikap/api/users.dart';
 import 'package:sitikap/extensions/extensions.dart';
+import 'package:sitikap/local/shared_preferenced.dart';
+import 'package:sitikap/models/register_model.dart';
 import 'package:sitikap/utils/colors.dart';
 import 'package:sitikap/views/register_screen.dart';
 import 'package:sitikap/widget/botnav.dart';
@@ -13,7 +16,54 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   bool obscurePassword = true;
+  bool isLoading = false;
+  RegisterUserModel? user;
+  String? errorMessage;
+
+  void loginUser() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Email and Password cannot be empty")),
+      );
+      isLoading = false;
+      return;
+    }
+    try {
+      final results = await AuthenticationAPI.loginUser(
+        email: email,
+        password: password,
+      );
+      setState(() {
+        user = results;
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Login successful")));
+      PreferenceHandler.saveToken(user?.data?.token.toString() ?? "");
+      context.pushReplacement(Botnav());
+      print(user?.toJson());
+    } catch (e) {
+      print(e);
+      setState(() {
+        errorMessage = e.toString();
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(errorMessage.toString())));
+    } finally {
+      setState(() {});
+      isLoading = false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,9 +91,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // TextField Email / No Peserta
                 TextFormField(
+                  controller: _emailController,
                   decoration: InputDecoration(
-                    hintText: "Email / No. Peserta",
-                    prefixIcon: const Icon(Icons.email),
+                    labelText: "Email",
+                    hintText: "Masukkkan Email Anda",
+                    prefixIcon: Icon(Icons.email),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -51,13 +103,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     fillColor: AppColors.neutralLightGray,
                   ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
 
                 // TextField Password
                 TextFormField(
+                  controller: _passwordController,
                   obscureText: obscurePassword,
                   decoration: InputDecoration(
-                    hintText: "Password",
+                    labelText: "Kata Sandi",
+                    hintText: " Masukkan Kata Sandi Akun Anda",
                     prefixIcon: Icon(Icons.lock),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -98,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       onPressed: () {
-                        context.push(FloatingNavBarExample());
+                        loginUser();
                       },
                       child: const Text(
                         "Login",

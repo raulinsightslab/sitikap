@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:sitikap/extensions/extensions.dart';
 import 'package:sitikap/local/shared_preferenced.dart';
 import 'package:sitikap/utils/colors.dart';
-import 'package:sitikap/views/home_screen.dart';
-import 'package:sitikap/views/login_screen.dart';
+import 'package:sitikap/views/onboarding_screen.dart';
+import 'package:sitikap/widget/botnav.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -40,7 +40,7 @@ class _SplashScreenState extends State<SplashScreen>
     // Text animasi
     _textController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: Duration(milliseconds: 800),
     );
 
     _textOpacity = Tween<double>(
@@ -78,9 +78,9 @@ class _SplashScreenState extends State<SplashScreen>
       if (!mounted) return;
 
       if (isLogin == true) {
-        context.pushReplacementNamed(HomeScreen.id);
+        context.pushReplacementNamed(Botnav.id);
       } else {
-        context.pushNamed(LoginScreen.id);
+        context.pushNamed(OnboardingScreen.id);
       }
     });
   }

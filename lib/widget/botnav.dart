@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:sitikap/views/absen_map.dart';
 import 'package:sitikap/views/home_screen.dart';
+import 'package:sitikap/views/profile_screen.dart';
 
-class FloatingNavBarExample extends StatefulWidget {
-  const FloatingNavBarExample({super.key});
+class Botnav extends StatefulWidget {
+  const Botnav({super.key});
   static const id = "/botnav";
 
   @override
-  State<FloatingNavBarExample> createState() => _FloatingNavBarExampleState();
+  State<Botnav> createState() => _BotnavState();
 }
 
-class _FloatingNavBarExampleState extends State<FloatingNavBarExample> {
+class _BotnavState extends State<Botnav> {
   int currentPage = 0;
 
   final List<Widget> _pages = [
     const HomeScreen(),
     const Center(child: Text("Riwayat", style: TextStyle(fontSize: 24))),
-    const Center(child: Text("Pesan", style: TextStyle(fontSize: 24))),
+    const GoogleMapsScreen(),
     const Center(child: Text("Izin", style: TextStyle(fontSize: 24))),
-    const Center(child: Text("Profil", style: TextStyle(fontSize: 24))),
+    const ProfileScreen(),
   ];
 
   void _handleIndexChanged(int index) {

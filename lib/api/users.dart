@@ -4,10 +4,12 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:sitikap/api/endpoint/endpoint.dart';
 import 'package:sitikap/local/shared_preferenced.dart';
+import 'package:sitikap/models/list_batch.dart';
+import 'package:sitikap/models/list_pelatihan.dart';
 import 'package:sitikap/models/register_model.dart';
 
 class AuthenticationAPI {
-  static Future<RegisterModel> registerUser({
+  static Future<RegisterUserModel> registerUser({
     required String name,
     required String email,
     required String password,
@@ -47,13 +49,13 @@ class AuthenticationAPI {
     print("Response Body: ${response.body}");
 
     if (response.statusCode == 200) {
-      return registerModelFromJson(response.body);
+      return RegisterUserModel.fromJson(jsonDecode(response.body));
     } else {
       throw Exception("Failed to register: ${response.body}");
     }
   }
 
-  static Future<RegisterModel> loginUser({
+  static Future<RegisterUserModel> loginUser({
     required String email,
     required String password,
   }) async {
@@ -66,13 +68,55 @@ class AuthenticationAPI {
     print("Status Code: ${response.statusCode}");
     print("Response Body: ${response.body}");
     if (response.statusCode == 200) {
-      final data = RegisterModel.fromJson(json.decode(response.body));
-      await PreferenceHandler.saveToken(data.data.token);
+      final data = RegisterUserModel.fromJson(json.decode(response.body));
+      await PreferenceHandler.saveToken(data.data?.token ?? "");
       await PreferenceHandler.saveLogin();
       return data;
     } else {
       final error = json.decode(response.body);
       throw Exception(error["message"] ?? "Register gagal");
+    }
+  }
+
+  static Future<Listpelatihan> getlistpelatihan() async {
+    final url = Uri.parse(Endpoint.trainings);
+    final token = await PreferenceHandler.getToken();
+
+    final response = await http.get(
+      url,
+      headers: {
+        "Accept": "application/json",
+        if (token != null) "Authorization": "Bearer $token",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return Listpelatihan.fromJson(json.decode(response.body));
+    } else {
+      final error = json.decode(response.body);
+      throw Exception(
+        error["message"] ?? "Gagal mengambil data list pelatihan",
+      );
+    }
+  }
+
+  static Future<Listbatch> getlistbatch() async {
+    final url = Uri.parse(Endpoint.batches);
+    final token = await PreferenceHandler.getToken();
+
+    final response = await http.get(
+      url,
+      headers: {
+        "Accept": "application/json",
+        if (token != null) "Authorization": "Bearer $token",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return Listbatch.fromJson(json.decode(response.body));
+    } else {
+      final error = json.decode(response.body);
+      throw Exception(error["message"] ?? "Gagal mengambil list batch");
     }
   }
 }

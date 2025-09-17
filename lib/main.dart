@@ -22,10 +22,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       initialRoute: SplashScreen.id,
       routes: {
+        SplashScreen.id: (context) => SplashScreen(),
         OnboardingScreen.id: (context) => OnboardingScreen(),
         LoginScreen.id: (context) => LoginScreen(),
-        SplashScreen.id: (context) => SplashScreen(),
-        FloatingNavBarExample.id: (context) => FloatingNavBarExample(),
+        Botnav.id: (context) => Botnav(),
       },
       // home: FloatingNavBarExample(),
     );
