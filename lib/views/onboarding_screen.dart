@@ -27,8 +27,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
           ),
+
           // Overlay warna biar teks lebih jelas
           Container(color: AppColors.primaryDarkBlue.withOpacity(0.7)),
+
           // Konten Utama
           SafeArea(
             child: Padding(
@@ -44,10 +46,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       height: 90,
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
                   // Judul
-                  Text(
+                  const Text(
                     "SiTiKAP",
                     style: TextStyle(
                       fontSize: 32,
@@ -56,7 +58,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       letterSpacing: 2,
                     ),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
 
                   // Tagline
                   Text(
@@ -66,7 +68,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       color: AppColors.neutralWhite.withOpacity(0.9),
                     ),
                   ),
-                  SizedBox(height: 60),
+                  const SizedBox(height: 60),
 
                   // Tombol Login
                   // Tombol Login dengan Gradient
@@ -100,7 +102,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 30),
+                  const SizedBox(height: 30),
 
                   // Tombol Register
                   SizedBox(
@@ -126,7 +128,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 30),
+                  const SizedBox(height: 30),
 
                   // Footer
                   Text(

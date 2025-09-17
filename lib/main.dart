@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       debugShowCheckedModeBanner: false,
-      initialRoute: OnboardingScreen.id,
+      initialRoute: SplashScreen.id,
       routes: {
         OnboardingScreen.id: (context) => OnboardingScreen(),
         LoginScreen.id: (context) => LoginScreen(),
