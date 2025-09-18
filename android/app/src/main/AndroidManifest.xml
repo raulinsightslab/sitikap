@@ -8,7 +8,7 @@
 
     <application
         android:name="${applicationName}"
-        android:label="Accendia"
+        android:label="Sitikap"
         android:icon="@mipmap/ic_launcher">
 
         <!-- Main Activity -->

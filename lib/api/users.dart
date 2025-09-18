@@ -77,6 +77,7 @@ class AuthenticationAPI {
       throw Exception(error["message"] ?? "Register gagal");
     }
   }
+  
 
   static Future<Listpelatihan> getlistpelatihan() async {
     final url = Uri.parse(Endpoint.trainings);

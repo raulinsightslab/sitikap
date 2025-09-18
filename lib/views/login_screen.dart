@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sitikap/api/users.dart';
 import 'package:sitikap/extensions/extensions.dart';
 import 'package:sitikap/local/shared_preferenced.dart';
 import 'package:sitikap/models/register_model.dart';
 import 'package:sitikap/utils/colors.dart';
 import 'package:sitikap/views/register_screen.dart';
+import 'package:sitikap/views/onboarding_screen.dart';
 import 'package:sitikap/widget/botnav.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -32,7 +34,9 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = _passwordController.text.trim();
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Email and Password cannot be empty")),
+        const SnackBar(
+          content: Text("Email dan Kata Sandi tidak boleh kosong"),
+        ),
       );
       isLoading = false;
       return;
@@ -47,9 +51,9 @@ class _LoginScreenState extends State<LoginScreen> {
       });
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text("Login successful")));
+      ).showSnackBar(const SnackBar(content: Text("Login berhasil 🎉")));
       PreferenceHandler.saveToken(user?.data?.token.toString() ?? "");
-      context.pushReplacement(Botnav());
+      context.pushReplacement(const Botnav());
       print(user?.toJson());
     } catch (e) {
       print(e);
@@ -69,33 +73,56 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.neutralWhite,
+      appBar: AppBar(),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 100),
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 30),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Image.asset("assets/images/ppkd_logo1.png", height: 150),
-                SizedBox(height: 20),
-                // Judul Aplikasi
-                Text(
-                  "SiTIKAP",
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.blue,
+                // Tombol Back ke Onboarding
+                // IconButton(
+                //   icon: const Icon(
+                //     Icons.arrow_back,
+                //     color: AppColors.primaryDarkBlue,
+                //   ),
+                //   onPressed: () {
+                //     context.pushReplacement(OnboardingScreen());
+                //   },
+                // ),
+                // const SizedBox(height: 20),
+
+                // Judul
+                Center(
+                  child: Text(
+                    "Selamat Datang Kembali 👋",
+                    style: GoogleFonts.poppins(
+                      fontSize: 23,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primaryDarkBlue,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 6),
+                Center(
+                  child: Text(
+                    "Masuk untuk melanjutkan ke SiTIKAP",
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 30),
 
-                // TextField Email / No Peserta
+                // TextField Email
                 TextFormField(
                   controller: _emailController,
                   decoration: InputDecoration(
                     labelText: "Email",
-                    hintText: "Masukkkan Email Anda",
-                    prefixIcon: Icon(Icons.email),
+                    hintText: "Masukkan Email Anda",
+                    prefixIcon: const Icon(Icons.email),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -103,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     fillColor: AppColors.neutralLightGray,
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
 
                 // TextField Password
                 TextFormField(
@@ -111,8 +138,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   obscureText: obscurePassword,
                   decoration: InputDecoration(
                     labelText: "Kata Sandi",
-                    hintText: " Masukkan Kata Sandi Akun Anda",
-                    prefixIcon: Icon(Icons.lock),
+                    hintText: "Masukkan Kata Sandi Akun Anda",
+                    prefixIcon: const Icon(Icons.lock),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -137,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 // Tombol Login dengan Gradient
                 SizedBox(
                   width: double.infinity,
-                  height: 50,
+                  height: 52,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: AppColors.buttonGradient,
@@ -165,20 +192,34 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 20),
 
-                // Tombol Register
-                GestureDetector(
-                  onTap: () {
-                    context.push(const RegisterScreen());
-                  },
-                  child: Text(
-                    "Register",
-                    style: TextStyle(
-                      color: AppColors.accentLightBlue,
-                      fontWeight: FontWeight.w600,
+                // Link ke Register
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Belum punya akun?",
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: Colors.grey[700],
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 6),
+                    GestureDetector(
+                      onTap: () {
+                        context.push(const RegisterScreen());
+                      },
+                      child: Text(
+                        "Daftar sekarang",
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black, // 🔥 biar standout
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
