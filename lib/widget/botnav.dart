@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:sitikap/views/absen_map.dart';
+import 'package:sitikap/views/absen_map_screen.dart';
 import 'package:sitikap/views/home_screen.dart';
 import 'package:sitikap/views/profile_screen.dart';
+import 'package:sitikap/views/riwayat_screen.dart';
 
 class Botnav extends StatefulWidget {
   const Botnav({super.key});
@@ -16,7 +17,7 @@ class _BotnavState extends State<Botnav> {
 
   final List<Widget> _pages = [
     const HomeScreen(),
-    const Center(child: Text("Riwayat", style: TextStyle(fontSize: 24))),
+    const RiwayatScreen(),
     const Center(
       child: Text("Absen", style: TextStyle(fontSize: 24)),
     ), // Placeholder untuk index 2

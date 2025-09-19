@@ -31,11 +31,18 @@ class _AbsenMapScreenState extends State<AbsenMapScreen> {
     _loadTodayAttendance();
   }
 
+  @override
+  void dispose() {
+    mapController?.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadTodayAttendance() async {
     try {
       setState(() => isLoading = true);
       final attendance = await AbsenService.getAbsenToday();
 
+      if (!mounted) return;
       setState(() {
         todayAttendance = attendance;
         canCheckIn = attendance.data.checkInTime.isEmpty;
@@ -46,6 +53,7 @@ class _AbsenMapScreenState extends State<AbsenMapScreen> {
     } catch (e) {
       print("Error loading today attendance: $e");
     } finally {
+      if (!mounted) return;
       setState(() => isLoading = false);
     }
   }
@@ -67,23 +75,34 @@ class _AbsenMapScreenState extends State<AbsenMapScreen> {
       }
     }
 
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
 
-    _updateLocation(position);
+      if (!mounted) return;
+      await _updateLocation(position);
+    } catch (e) {
+      print("Error getting current location: $e");
+    }
   }
 
   Future<void> _updateLocation(Position position) async {
-    _currentPosition = LatLng(position.latitude, position.longitude);
-    lat = position.latitude;
-    long = position.longitude;
+    if (!mounted) return;
+
+    setState(() {
+      _currentPosition = LatLng(position.latitude, position.longitude);
+      lat = position.latitude;
+      long = position.longitude;
+    });
 
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(
         _currentPosition.latitude,
         _currentPosition.longitude,
       );
+
+      if (!mounted) return;
 
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks[0];
@@ -109,6 +128,7 @@ class _AbsenMapScreenState extends State<AbsenMapScreen> {
       }
     } catch (e) {
       print("Error getting address: $e");
+      if (!mounted) return;
       setState(() {
         _currentAddress =
             "Lokasi: ${_currentPosition.latitude.toStringAsFixed(6)}, ${_currentPosition.longitude.toStringAsFixed(6)}";
@@ -118,6 +138,7 @@ class _AbsenMapScreenState extends State<AbsenMapScreen> {
 
   Future<void> _handleCheckIn() async {
     try {
+      if (!mounted) return;
       setState(() => isLoading = true);
 
       final now = DateTime.now();
@@ -133,22 +154,26 @@ class _AbsenMapScreenState extends State<AbsenMapScreen> {
         checkInAddress: _currentAddress,
       );
 
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(result.message)));
 
       await _loadTodayAttendance();
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Gagal check in: $e")));
     } finally {
+      if (!mounted) return;
       setState(() => isLoading = false);
     }
   }
 
   Future<void> _handleCheckOut() async {
     try {
+      if (!mounted) return;
       setState(() => isLoading = true);
 
       final now = DateTime.now();
@@ -164,22 +189,26 @@ class _AbsenMapScreenState extends State<AbsenMapScreen> {
         checkOutAddress: _currentAddress,
       );
 
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(result.message)));
 
       await _loadTodayAttendance();
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Gagal check out: $e")));
     } finally {
+      if (!mounted) return;
       setState(() => isLoading = false);
     }
   }
 
   Future<void> _onMapTap(LatLng position) async {
     try {
+      if (!mounted) return;
       setState(() => isLoading = true);
 
       final pos = Position(
@@ -191,14 +220,15 @@ class _AbsenMapScreenState extends State<AbsenMapScreen> {
         heading: 0.0,
         speed: 0.0,
         speedAccuracy: 0.0,
-        altitudeAccuracy: 0.0, // ✅ jangan kosongin argumen
-        headingAccuracy: 0.0, // ✅ ini juga wajib di versi terbaru
+        altitudeAccuracy: 0.0,
+        headingAccuracy: 0.0,
       );
 
       await _updateLocation(pos);
     } catch (e) {
       print("Error updating location: $e");
     } finally {
+      if (!mounted) return;
       setState(() => isLoading = false);
     }
   }

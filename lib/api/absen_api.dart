@@ -5,6 +5,7 @@ import 'package:sitikap/api/endpoint/endpoint.dart';
 import 'package:sitikap/local/shared_preferenced.dart';
 import 'package:sitikap/models/absen/check_in.dart';
 import 'package:sitikap/models/absen/check_out.dart';
+import 'package:sitikap/models/absen/history_absen_model.dart';
 import 'package:sitikap/models/absen/today_model.dart';
 
 class AbsenService {
@@ -140,6 +141,33 @@ class AbsenService {
       }
     } catch (e) {
       throw Exception('Get today attendance error: $e');
+    }
+  }
+
+  // Tambahkan di absen_api.dart
+  static Future<HistoryAbsen> getHistory() async {
+    try {
+      final token = await PreferenceHandler.getToken();
+      if (token == null) throw Exception("Token tidak ditemukan");
+
+      final response = await http.get(
+        Uri.parse(
+          Endpoint.history,
+        ), // Pastikan endpoint ini sudah didefinisikan
+        headers: _getHeaders(token),
+      );
+
+      print("History Status: ${response.statusCode}");
+      print("History Response: ${response.body}");
+
+      if (response.statusCode == 200) {
+        return historyAbsenFromJson(response.body);
+      } else {
+        final error = json.decode(response.body);
+        throw Exception(error["message"] ?? "Gagal mengambil riwayat absensi");
+      }
+    } catch (e) {
+      throw Exception('Get history error: $e');
     }
   }
 }

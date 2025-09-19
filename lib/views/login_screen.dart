@@ -72,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.neutralWhite,
-      appBar: AppBar(),
+      appBar: AppBar(backgroundColor: AppColors.neutralWhite),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -207,7 +207,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(width: 6),
                     GestureDetector(
                       onTap: () {
-                        context.push(const RegisterScreen());
+                        context.push(RegisterScreen());
                       },
                       child: Text(
                         "Daftar sekarang",

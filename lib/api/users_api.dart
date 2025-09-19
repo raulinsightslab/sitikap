@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:sitikap/api/endpoint/endpoint.dart';
 import 'package:sitikap/local/shared_preferenced.dart';
-import 'package:sitikap/models/users/get_user.dart';
+import 'package:sitikap/models/users/get_profile.dart';
 import 'package:sitikap/models/users/list_batch.dart';
 import 'package:sitikap/models/users/list_pelatihan.dart';
 import 'package:sitikap/models/users/register_model.dart';
