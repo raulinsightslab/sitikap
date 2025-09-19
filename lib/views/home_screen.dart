@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sitikap/api/users_api.dart';
+import 'package:sitikap/models/users/get_user.dart';
 import 'package:sitikap/utils/colors.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -9,6 +11,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  // late Future<Getuser>? futureUser;
+  Getuser? user;
+
   // dummy data absensi
   String hadirJam = "08:05 WIB";
   List<Map<String, String>> riwayat = [
@@ -18,6 +23,24 @@ class _HomeScreenState extends State<HomeScreen> {
     {"tanggal": "12 Sept 2025", "status": "Alpha"},
     {"tanggal": "11 Sept 2025", "status": "Hadir"},
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    getuserdata();
+    // futureUser = AuthenticationAPI.getProfile();
+  }
+
+  Future<void> getuserdata() async {
+    try {
+      final data = await AuthenticationAPI.getProfile();
+      setState(() {
+        user = data;
+      });
+    } catch (e) {
+      print("user get error: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,25 +63,76 @@ class _HomeScreenState extends State<HomeScreen> {
                         "Selamat Datang,",
                         style: TextStyle(fontSize: 16, color: Colors.black54),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(
-                        "User Absensi",
+                        "${user?.data.name ?? "loading"}",
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: AppColors.primaryDarkBlue,
                         ),
                       ),
+
+                      // FutureBuilder<Getuser>(
+                      //   // future: futureUser,
+                      //   builder: (context, snapshot) {
+                      //     if (snapshot.connectionState ==
+                      //         ConnectionState.waiting) {
+                      //       return
+                      // Text(
+                      //         "Loading...",
+                      //         style: TextStyle(
+                      //           fontSize: 22,
+                      //           fontWeight: FontWeight.bold,
+                      //           color: AppColors.primaryDarkBlue,
+                      //         ),
+                      //       );
+                      //     } else if (snapshot.hasError) {
+                      //       return Text(
+                      //         "User Absensi",
+                      //         style: TextStyle(
+                      //           fontSize: 20,
+                      //           fontWeight: FontWeight.bold,
+                      //           color: AppColors.primaryDarkBlue,
+                      //         ),
+                      //       );
+                      //     } else if (snapshot.hasData) {
+                      //       final user = snapshot.data!.data;
+                      //       return Text(
+                      //         "${user.name}",
+                      //         style: TextStyle(
+                      //           fontSize: 20,
+                      //           fontWeight: FontWeight.bold,
+                      //           color: AppColors.primaryDarkBlue,
+                      //         ),
+                      //       );
+                      //     } else {
+                      //       return Text(
+                      //         "User Absensi",
+                      //         style: TextStyle(
+                      //           fontSize: 20,
+                      //           fontWeight: FontWeight.bold,
+                      //           color: AppColors.primaryDarkBlue,
+                      //         ),
+                      //       );
+                      //     }
+                      //   },
+                      // ),
                     ],
                   ),
                   CircleAvatar(
                     radius: 26,
-                    backgroundColor: AppColors.blue.withOpacity(0.1),
-                    child: const Icon(
-                      Icons.person,
-                      size: 28,
-                      color: AppColors.blue,
-                    ),
+                    backgroundImage:
+                        (user?.data.profilePhotoUrl != null &&
+                            user!.data.profilePhotoUrl.isNotEmpty)
+                        ? NetworkImage(user!.data.profilePhotoUrl)
+                        : null,
+                    backgroundColor: Colors.white,
+                    child:
+                        (user?.data.profilePhotoUrl == null ||
+                            user!.data.profilePhotoUrl.isEmpty)
+                        ? const Icon(Icons.person, size: 28, color: Colors.grey)
+                        : null,
                   ),
                 ],
               ),

@@ -17,7 +17,9 @@ class _BotnavState extends State<Botnav> {
   final List<Widget> _pages = [
     const HomeScreen(),
     const Center(child: Text("Riwayat", style: TextStyle(fontSize: 24))),
-    const GoogleMapsScreen(),
+    const Center(
+      child: Text("Absen", style: TextStyle(fontSize: 24)),
+    ), // Placeholder untuk index 2
     const Center(child: Text("Izin", style: TextStyle(fontSize: 24))),
     const ProfileScreen(),
   ];
@@ -28,17 +30,22 @@ class _BotnavState extends State<Botnav> {
     });
   }
 
+  // Function untuk navigate ke AbsenMapScreen
+  void _navigateToAbsenMap() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const AbsenMapScreen()));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
       body: _pages[currentPage],
 
-      // FAB fingerprint
+      // FAB fingerprint - Navigate ke AbsenMapScreen
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _handleIndexChanged(2); // index fingerprint (tengah)
-        },
+        onPressed: _navigateToAbsenMap,
         backgroundColor: Colors.white,
         shape: CircleBorder(),
         child: Icon(Icons.fingerprint, color: Colors.black, size: 30),

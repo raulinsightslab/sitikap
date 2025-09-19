@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sitikap/extensions/extensions.dart';
 import 'package:sitikap/local/shared_preferenced.dart';
 import 'package:sitikap/utils/colors.dart';
-import 'package:sitikap/views/login_screen.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:sitikap/views/onboarding_screen.dart';
 
 class ProfileScreen extends StatefulWidget {

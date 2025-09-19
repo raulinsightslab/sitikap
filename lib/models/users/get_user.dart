@@ -1,99 +1,74 @@
 // To parse this JSON data, do
 //
-//     final loginModel = loginModelFromJson(jsonString);
+//     final getuser = getuserFromJson(jsonString);
 
 import 'dart:convert';
 
-LoginModel loginModelFromJson(String str) =>
-    LoginModel.fromJson(json.decode(str));
+Getuser getuserFromJson(String str) => Getuser.fromJson(json.decode(str));
 
-String loginModelToJson(LoginModel data) => json.encode(data.toJson());
+String getuserToJson(Getuser data) => json.encode(data.toJson());
 
-class LoginModel {
+class Getuser {
   String message;
   Data data;
 
-  LoginModel({required this.message, required this.data});
+  Getuser({required this.message, required this.data});
 
-  factory LoginModel.fromJson(Map<String, dynamic> json) =>
-      LoginModel(message: json["message"], data: Data.fromJson(json["data"]));
+  factory Getuser.fromJson(Map<String, dynamic> json) =>
+      Getuser(message: json["message"], data: Data.fromJson(json["data"]));
 
   Map<String, dynamic> toJson() => {"message": message, "data": data.toJson()};
 }
 
 class Data {
-  String token;
-  User user;
-
-  Data({required this.token, required this.user});
-
-  factory Data.fromJson(Map<String, dynamic> json) =>
-      Data(token: json["token"], user: User.fromJson(json["user"]));
-
-  Map<String, dynamic> toJson() => {"token": token, "user": user.toJson()};
-}
-
-class User {
   int id;
   String name;
   String email;
-  dynamic emailVerifiedAt;
-  DateTime createdAt;
-  DateTime updatedAt;
-  String batchId;
-  String trainingId;
-  String jenisKelamin;
-  String profilePhoto;
-  String onesignalPlayerId;
+  String batchKe;
+  String trainingTitle;
   Batch batch;
   Training training;
+  String jenisKelamin;
+  String profilePhoto;
+  String profilePhotoUrl;
 
-  User({
+  Data({
     required this.id,
     required this.name,
     required this.email,
-    required this.emailVerifiedAt,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.batchId,
-    required this.trainingId,
-    required this.jenisKelamin,
-    required this.profilePhoto,
-    required this.onesignalPlayerId,
+    required this.batchKe,
+    required this.trainingTitle,
     required this.batch,
     required this.training,
+    required this.jenisKelamin,
+    required this.profilePhoto,
+    required this.profilePhotoUrl,
   });
 
-  factory User.fromJson(Map<String, dynamic> json) => User(
+  factory Data.fromJson(Map<String, dynamic> json) => Data(
     id: json["id"],
     name: json["name"],
     email: json["email"],
-    emailVerifiedAt: json["email_verified_at"],
-    createdAt: DateTime.parse(json["created_at"]),
-    updatedAt: DateTime.parse(json["updated_at"]),
-    batchId: json["batch_id"],
-    trainingId: json["training_id"],
-    jenisKelamin: json["jenis_kelamin"],
-    profilePhoto: json["profile_photo"],
-    onesignalPlayerId: json["onesignal_player_id"],
+    batchKe: json["batch_ke"],
+    trainingTitle: json["training_title"],
     batch: Batch.fromJson(json["batch"]),
     training: Training.fromJson(json["training"]),
+    jenisKelamin: json["jenis_kelamin"],
+    profilePhoto: json["profile_photo"],
+    profilePhotoUrl: json["profile_photo_url"],
   );
 
   Map<String, dynamic> toJson() => {
     "id": id,
     "name": name,
     "email": email,
-    "email_verified_at": emailVerifiedAt,
-    "created_at": createdAt.toIso8601String(),
-    "updated_at": updatedAt.toIso8601String(),
-    "batch_id": batchId,
-    "training_id": trainingId,
-    "jenis_kelamin": jenisKelamin,
-    "profile_photo": profilePhoto,
-    "onesignal_player_id": onesignalPlayerId,
+    "batch_ke": batchKe,
+    "training_title": trainingTitle,
     "batch": batch.toJson(),
     "training": training.toJson(),
+    "jenis_kelamin": jenisKelamin,
+    "profile_photo": profilePhoto,
+    "profile_photo_url": profilePhotoUrl,
   };
 }
 

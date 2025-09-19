@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:sitikap/api/users.dart';
+import 'package:sitikap/api/users_api.dart';
 import 'package:sitikap/extensions/extensions.dart';
 import 'package:sitikap/local/shared_preferenced.dart';
-import 'package:sitikap/models/register_model.dart';
+import 'package:sitikap/models/users/register_model.dart';
 import 'package:sitikap/utils/colors.dart';
 import 'package:sitikap/views/register_screen.dart';
-import 'package:sitikap/views/onboarding_screen.dart';
 import 'package:sitikap/widget/botnav.dart';
 
 class LoginScreen extends StatefulWidget {

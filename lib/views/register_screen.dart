@@ -1,14 +1,15 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:sitikap/api/users.dart';
+import 'package:sitikap/api/users_api.dart';
 import 'package:sitikap/extensions/extensions.dart';
-import 'package:sitikap/models/list_batch.dart' as batch_model;
-import 'package:sitikap/models/list_pelatihan.dart' as training_model;
+import 'package:sitikap/models/users/list_batch.dart' as batch_model;
+import 'package:sitikap/models/users/list_pelatihan.dart' as training_model;
 import 'package:sitikap/utils/colors.dart';
 import 'package:sitikap/views/login_screen.dart';
 import 'package:sitikap/views/onboarding_screen.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -279,7 +280,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
           // Jenis Kelamin
           DropdownButtonFormField<String>(
-            value: _selectedGender,
+            initialValue: _selectedGender,
             decoration: InputDecoration(
               labelText: "Jenis Kelamin",
               prefixIcon: const Icon(Icons.person_outline),
@@ -328,7 +329,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   style: TextStyle(color: Colors.red),
                 )
               : DropdownButtonFormField<batch_model.Datum>(
-                  value: _selectedBatch,
+                  initialValue: _selectedBatch,
                   decoration: InputDecoration(
                     labelText: "Batch",
                     prefixIcon: const Icon(Icons.group),

@@ -4,9 +4,10 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:sitikap/api/endpoint/endpoint.dart';
 import 'package:sitikap/local/shared_preferenced.dart';
-import 'package:sitikap/models/list_batch.dart';
-import 'package:sitikap/models/list_pelatihan.dart';
-import 'package:sitikap/models/register_model.dart';
+import 'package:sitikap/models/users/get_user.dart';
+import 'package:sitikap/models/users/list_batch.dart';
+import 'package:sitikap/models/users/list_pelatihan.dart';
+import 'package:sitikap/models/users/register_model.dart';
 
 class AuthenticationAPI {
   static Future<RegisterUserModel> registerUser({
@@ -77,7 +78,6 @@ class AuthenticationAPI {
       throw Exception(error["message"] ?? "Register gagal");
     }
   }
-  
 
   static Future<Listpelatihan> getlistpelatihan() async {
     final url = Uri.parse(Endpoint.trainings);
@@ -118,6 +118,23 @@ class AuthenticationAPI {
     } else {
       final error = json.decode(response.body);
       throw Exception(error["message"] ?? "Gagal mengambil list batch");
+    }
+  }
+
+  static Future<Getuser> getProfile() async {
+    final url = Uri.parse(Endpoint.profile);
+    // Ambil token dari SharedPreferences
+    final token = await PreferenceHandler.getToken();
+    final response = await http.get(
+      url,
+      headers: {"Accept": "application/json", "Authorization": "Bearer $token"},
+    );
+
+    if (response.statusCode == 200) {
+      return Getuser.fromJson(json.decode(response.body));
+    } else {
+      final error = json.decode(response.body);
+      throw Exception(error["message"] ?? "Failed to load profile");
     }
   }
 }
