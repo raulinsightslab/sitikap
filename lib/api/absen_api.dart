@@ -145,15 +145,14 @@ class AbsenService {
   }
 
   // Tambahkan di absen_api.dart
-  static Future<HistoryAbsen> getHistory() async {
+  // Dalam file absen_api.dart - MODIFIKASI METHOD getHistory()
+  static Future<RiwayatAbsen> getHistory() async {
     try {
       final token = await PreferenceHandler.getToken();
       if (token == null) throw Exception("Token tidak ditemukan");
 
       final response = await http.get(
-        Uri.parse(
-          Endpoint.history,
-        ), // Pastikan endpoint ini sudah didefinisikan
+        Uri.parse(Endpoint.history),
         headers: _getHeaders(token),
       );
 
@@ -161,13 +160,80 @@ class AbsenService {
       print("History Response: ${response.body}");
 
       if (response.statusCode == 200) {
-        return historyAbsenFromJson(response.body);
+        // Handle parsing dengan lebih aman
+        final responseData = json.decode(response.body);
+
+        // Pastikan structure response sesuai expectasi
+        if (responseData is! Map<String, dynamic>) {
+          throw Exception("Format response tidak valid");
+        }
+
+        final message = responseData['message'] ?? 'Success';
+        final dataList = responseData['data'] as List? ?? [];
+
+        // Convert each item dengan handle null values
+        final List<Datum> data = dataList.map((item) {
+          if (item is! Map<String, dynamic>) {
+            throw Exception("Format data item tidak valid");
+          }
+
+          return Datum(
+            id: item['id'] as int? ?? 0,
+            attendanceDate: item['attendance_date'] != null
+                ? DateTime.parse(item['attendance_date'].toString())
+                : DateTime.now(),
+            checkInTime:
+                item['check_in_time']?.toString() ??
+                "", // Empty string instead of null
+            checkOutTime: item['check_out_time']?.toString(),
+            checkInLat: (item['check_in_lat'] as num?)?.toDouble() ?? 0.0,
+            checkInLng: (item['check_in_lng'] as num?)?.toDouble() ?? 0.0,
+            checkOutLat: (item['check_out_lat'] as num?)?.toDouble(),
+            checkOutLng: (item['check_out_lng'] as num?)?.toDouble(),
+            checkInAddress:
+                item['check_in_address']?.toString() ?? "", // Empty string
+            checkOutAddress: item['check_out_address']?.toString(),
+            checkInLocation:
+                item['check_in_location']?.toString() ?? "", // Empty string
+            checkOutLocation: item['check_out_location']?.toString(),
+            status: item['status']?.toString() ?? "unknown", // Default value
+            alasanIzin: item['alasan_izin'],
+          );
+        }).toList();
+
+        return RiwayatAbsen(message: message, data: data);
       } else {
         final error = json.decode(response.body);
         throw Exception(error["message"] ?? "Gagal mengambil riwayat absensi");
       }
     } catch (e) {
+      print("Get history error details: $e");
       throw Exception('Get history error: $e');
     }
   }
+  // static Future<RiwayatAbsen> getHistory() async {
+  //   try {
+  //     final token = await PreferenceHandler.getToken();
+  //     if (token == null) throw Exception("Token tidak ditemukan");
+
+  //     final response = await http.get(
+  //       Uri.parse(
+  //         Endpoint.history,
+  //       ), // Pastikan endpoint ini sudah didefinisikan
+  //       headers: _getHeaders(token),
+  //     );
+
+  //     print("History Status: ${response.statusCode}");
+  //     print("History Response: ${response.body}");
+
+  //     if (response.statusCode == 200) {
+  //       return riwayatAbsenFromJson(response.body);
+  //     } else {
+  //       final error = json.decode(response.body);
+  //       throw Exception(error["message"] ?? "Gagal mengambil riwayat absensi");
+  //     }
+  //   } catch (e) {
+  //     throw Exception('Get history error: $e');
+  //   }
+  // }
 }

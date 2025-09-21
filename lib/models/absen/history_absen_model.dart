@@ -1,21 +1,21 @@
 // To parse this JSON data, do
 //
-//     final historyAbsen = historyAbsenFromJson(jsonString);
+//     final riwayatAbsen = riwayatAbsenFromJson(jsonString);
 
 import 'dart:convert';
 
-HistoryAbsen historyAbsenFromJson(String str) =>
-    HistoryAbsen.fromJson(json.decode(str));
+RiwayatAbsen riwayatAbsenFromJson(String str) =>
+    RiwayatAbsen.fromJson(json.decode(str));
 
-String historyAbsenToJson(HistoryAbsen data) => json.encode(data.toJson());
+String riwayatAbsenToJson(RiwayatAbsen data) => json.encode(data.toJson());
 
-class HistoryAbsen {
+class RiwayatAbsen {
   String message;
   List<Datum> data;
 
-  HistoryAbsen({required this.message, required this.data});
+  RiwayatAbsen({required this.message, required this.data});
 
-  factory HistoryAbsen.fromJson(Map<String, dynamic> json) => HistoryAbsen(
+  factory RiwayatAbsen.fromJson(Map<String, dynamic> json) => RiwayatAbsen(
     message: json["message"],
     data: List<Datum>.from(json["data"].map((x) => Datum.fromJson(x))),
   );

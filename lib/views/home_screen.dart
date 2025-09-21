@@ -14,7 +14,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   Getuser? user;
-  HistoryAbsen? historyAbsen;
+  RiwayatAbsen? historyAbsen;
   bool isLoadingHistory = false;
 
   @override

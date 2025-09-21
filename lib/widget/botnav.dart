@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sitikap/views/absen_map_screen.dart';
 import 'package:sitikap/views/home_screen.dart';
+import 'package:sitikap/views/izin_screen.dart';
 import 'package:sitikap/views/profile_screen.dart';
 import 'package:sitikap/views/riwayat_screen.dart';
 
@@ -21,7 +22,7 @@ class _BotnavState extends State<Botnav> {
     const Center(
       child: Text("Absen", style: TextStyle(fontSize: 24)),
     ), // Placeholder untuk index 2
-    const Center(child: Text("Izin", style: TextStyle(fontSize: 24))),
+    const IzinScreen(),
     const ProfileScreen(),
   ];
 
