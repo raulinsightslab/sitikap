@@ -2,10 +2,12 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:sitikap/api/absen_api.dart';
 import 'package:sitikap/api/users_api.dart';
+import 'package:sitikap/extensions/extensions.dart';
 import 'package:sitikap/models/absen/history_absen_model.dart';
 import 'package:sitikap/models/absen/list_absen_stats.dart';
 import 'package:sitikap/models/users/get_profile.dart';
 import 'package:sitikap/utils/colors.dart';
+import 'package:sitikap/widget/botnav.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Getuser? user;
   RiwayatAbsen? historyAbsen;
   bool isLoadingHistory = false;
-  ListAbsenStats? stats; // Gunakan model dari list_absen_stats.dart
+  ListAbsenStats? stats;
 
   @override
   void initState() {
@@ -53,12 +55,11 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Fungsi untuk mengambil statistik absen
   Future<void> getStats() async {
     try {
       final statsData = await AbsenService.getStatistikAbsen();
       setState(() {
-        stats = statsData; // Perbaikan: stats = statsData, bukan stats = stats
+        stats = statsData;
       });
     } catch (e) {
       print("Error getting stats: $e");
@@ -105,7 +106,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return Colors.red;
   }
 
-  // Fungsi untuk membuat data pie chart berdasarkan response API
   List<PieChartSectionData> _getPieChartSections() {
     if (stats == null || stats!.data == null) {
       return [];
@@ -113,33 +113,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final sections = <PieChartSectionData>[];
 
-    // Data untuk pie chart - sesuaikan dengan response API yang sebenarnya
-    // Catatan: Response API memiliki struktur yang berbeda dengan yang diharapkan pie chart
-    // Anda perlu menyesuaikan dengan struktur data yang sebenarnya dari API
-
-    // Contoh data dummy untuk demonstrasi
-    // Ganti dengan data aktual dari response API
     final values = [
       stats!.data!.totalMasuk?.toDouble() ?? 0.0,
       stats!.data!.totalIzin?.toDouble() ?? 0.0,
-      0.0, // Sakit - tidak ada di response, mungkin perlu ditambahkan
-      0.0, // Alpha - tidak ada di response, mungkin perlu ditambahkan
-      0.0, // Terlambat - tidak ada di response, mungkin perlu ditambahkan
     ];
 
-    final colors = [
-      Colors.green, // Hadir/Masuk
-      Colors.orange, // Izin
-      // Colors.blue, // Sakit
-      // Colors.red, // Alpha
-      // Colors.amber, // Terlambat
-    ];
-
-    final labels = ['Masuk', 'Izin'];
+    final colors = [AppColors.accentGreen, Colors.orangeAccent];
 
     double total = values.fold(0, (sum, value) => sum + value);
 
-    // Jika tidak ada data, tampilkan section kosong
     if (total == 0) {
       sections.add(
         PieChartSectionData(
@@ -178,82 +160,150 @@ class _HomeScreenState extends State<HomeScreen> {
     return sections;
   }
 
-  // Widget untuk menampilkan legenda
   Widget _buildLegendItem(Color color, String text, int value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
           Container(
-            width: 16,
-            height: 10,
+            width: 12,
+            height: 12,
             decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
           const SizedBox(width: 8),
-          Text(text, style: const TextStyle(fontSize: 12)),
-          const Spacer(),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(fontSize: 12, color: Colors.black87),
+            ),
+          ),
           Text(
             '$value',
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
           ),
         ],
       ),
     );
   }
 
+  // Hitung progress training berdasarkan riwayat absensi
+  Map<String, dynamic> _calculateTrainingProgress() {
+    if (historyAbsen == null || historyAbsen!.data.isEmpty) {
+      return {
+        'progress': 0.0,
+        'daysCompleted': 0,
+        'totalDays': 45,
+        'status': 'Belum Mulai',
+        'statusColor': Colors.grey,
+      };
+    }
+
+    // Hitung jumlah hari unik yang sudah absen
+    final uniqueAbsenDates = historyAbsen!.data
+        .map(
+          (absen) => DateTime(
+            absen.attendanceDate.year,
+            absen.attendanceDate.month,
+            absen.attendanceDate.day,
+          ),
+        )
+        .toSet()
+        .length;
+
+    final daysCompleted = uniqueAbsenDates;
+    final totalDays = 45;
+    final progress = daysCompleted / totalDays;
+
+    String status;
+    Color statusColor;
+
+    if (daysCompleted == 0) {
+      status = 'Belum Mulai';
+      statusColor = Colors.grey;
+    } else if (daysCompleted < totalDays) {
+      status = 'Dalam Progress';
+      statusColor = Colors.amber;
+    } else {
+      status = 'Selesai';
+      statusColor = Colors.green;
+    }
+
+    return {
+      'progress': progress.clamp(0.0, 1.0),
+      'daysCompleted': daysCompleted,
+      'totalDays': totalDays,
+      'status': status,
+      'statusColor': statusColor,
+    };
+  }
+
+  // Widget untuk chip informasi
+  Widget _buildInfoChip(IconData icon, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: Colors.white),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            style: const TextStyle(
+              fontSize: 10,
+              color: Colors.white,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Pesan motivasi berdasarkan progress
+  String _getMotivationalMessage(int daysCompleted, int totalDays) {
+    final percentage = (daysCompleted / totalDays * 100).toInt();
+
+    if (percentage < 25) {
+      return "Langkah awal yang baik! Terus konsisten! 💪";
+    } else if (percentage < 50) {
+      return "Sudah $percentage%! Pertahankan semangatnya! 🔥";
+    } else if (percentage < 75) {
+      return "Luar biasa! Sudah lebih dari setengah jalan! 🚀";
+    } else if (percentage < 100) {
+      return "Hampir sampai! Tinggal ${totalDays - daysCompleted} hari lagi! 🎯";
+    } else {
+      return "Selesai! Selamat telah menyelesaikan training! 🎉";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final progressData = _calculateTrainingProgress();
+    final daysCompleted = progressData['daysCompleted'] as int;
+    final progress = progressData['progress'] as double;
+    final totalDays = progressData['totalDays'] as int;
+    final status = progressData['status'] as String;
+    final statusColor = progressData['statusColor'] as Color;
+
     return Scaffold(
       backgroundColor: AppColors.neutralLightGray,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // HEADER
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Selamat Datang,",
-                        style: TextStyle(fontSize: 16, color: Colors.black54),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        "${user?.data.name ?? "loading"}",
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primaryDarkBlue,
-                        ),
-                      ),
-                    ],
-                  ),
-                  CircleAvatar(
-                    radius: 26,
-                    backgroundImage:
-                        (user?.data.profilePhotoUrl != null &&
-                            user!.data.profilePhotoUrl.isNotEmpty)
-                        ? NetworkImage(user!.data.profilePhotoUrl)
-                        : null,
-                    backgroundColor: Colors.white,
-                    child:
-                        (user?.data.profilePhotoUrl == null ||
-                            user!.data.profilePhotoUrl.isEmpty)
-                        ? const Icon(Icons.person, size: 28, color: Colors.grey)
-                        : null,
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 24),
-
-              // PIE CHART STATISTIK ABSEN
+              // HEADER SECTION
               Container(
+                width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: AppColors.neutralWhite,
@@ -262,7 +312,266 @@ class _HomeScreenState extends State<HomeScreen> {
                     BoxShadow(
                       color: Colors.black.withOpacity(0.05),
                       blurRadius: 6,
-                      offset: Offset(0, 3),
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Selamat Datang, $user",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black54,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            user?.data.name ?? "Loading...",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primaryDarkBlue,
+                            ),
+                          ),
+                          if (daysCompleted > 0) ...[
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.accentGreen.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: AppColors.accentGreen,
+                                ),
+                              ),
+                              child: Text(
+                                "$daysCompleted hari sudah absen",
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: AppColors.accentGreen,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    CircleAvatar(
+                      radius: 28,
+                      backgroundImage:
+                          (user?.data.profilePhotoUrl != null &&
+                              user!.data.profilePhotoUrl.isNotEmpty)
+                          ? NetworkImage(user!.data.profilePhotoUrl)
+                          : null,
+                      backgroundColor: AppColors.lightBlue,
+                      child:
+                          (user?.data.profilePhotoUrl == null ||
+                              user!.data.profilePhotoUrl.isEmpty)
+                          ? const Icon(
+                              Icons.person,
+                              size: 24,
+                              color: Colors.white,
+                            )
+                          : null,
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // TRAINING PROGRESS SECTION
+              if (user?.data.training != null)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: AppColors.buttonGradient,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.school_outlined,
+                              size: 18,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              "Progress Training",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // Training Info
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            user!.data.training.title,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 4,
+                            children: [
+                              _buildInfoChip(
+                                Icons.group,
+                                "Batch ${user?.data.batchKe ?? '-'}",
+                              ),
+                              _buildInfoChip(
+                                Icons.flag,
+                                "Target: $totalDays Hari",
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Progress Bar
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Progress Kehadiran",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white.withOpacity(0.9),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: statusColor.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  status,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: statusColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          LinearProgressIndicator(
+                            value: progress,
+                            backgroundColor: Colors.white.withOpacity(0.3),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              progress == 1.0 ? Colors.green : Colors.white,
+                            ),
+                            borderRadius: BorderRadius.circular(4),
+                            minHeight: 6,
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "${(progress * 100).toStringAsFixed(0)}%",
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                "$daysCompleted/$totalDays hari",
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.white.withOpacity(0.8),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (daysCompleted > 0 && daysCompleted < totalDays)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text(
+                                _getMotivationalMessage(
+                                  daysCompleted,
+                                  totalDays,
+                                ),
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.white.withOpacity(0.8),
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+              const SizedBox(height: 16),
+
+              // STATISTICS SECTION
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.neutralWhite,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
@@ -272,19 +581,23 @@ class _HomeScreenState extends State<HomeScreen> {
                     const Text(
                       "Statistik Absensi",
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: AppColors.primaryDarkBlue,
                       ),
                     ),
                     const SizedBox(height: 16),
-
                     if (stats == null)
-                      const Center(child: CircularProgressIndicator())
+                      const Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.primaryDarkBlue,
+                          ),
+                        ),
+                      )
                     else
                       Row(
                         children: [
-                          // Pie Chart
                           Expanded(
                             flex: 5,
                             child: AspectRatio(
@@ -292,18 +605,16 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: PieChart(
                                 PieChartData(
                                   sections: _getPieChartSections(),
-                                  centerSpaceRadius: 40,
+                                  centerSpaceRadius: 30,
                                   sectionsSpace: 2,
                                 ),
                               ),
                             ),
                           ),
-
-                          // Legenda - sesuaikan dengan data aktual dari API
+                          const SizedBox(width: 16),
                           Expanded(
-                            flex: 3,
+                            flex: 5,
                             child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 _buildLegendItem(
                                   AppColors.accentGreen,
@@ -311,25 +622,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   stats!.data!.totalMasuk ?? 0,
                                 ),
                                 _buildLegendItem(
-                                  Colors.orange,
+                                  Colors.orangeAccent,
                                   'Izin',
                                   stats!.data!.totalIzin ?? 0,
                                 ),
-                                // _buildLegendItem(
-                                //   Colors.blue,
-                                //   'Sakit',
-                                //   0, // Tidak ada data sakit di response
-                                // ),
-                                // _buildLegendItem(
-                                //   Colors.red,
-                                //   'Alpha',
-                                //   0, // Tidak ada data alpha di response
-                                // ),
-                                // _buildLegendItem(
-                                //   Colors.amber,
-                                //   'Terlambat',
-                                //   0, // Tidak ada data terlambat di response
-                                // ),
                               ],
                             ),
                           ),
@@ -339,95 +635,183 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
-              // RIWAYAT ABSENSI
-              const Text(
-                "Riwayat Absensi",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primaryDarkBlue,
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              if (isLoadingHistory)
-                const Center(child: CircularProgressIndicator())
-              else if (historyAbsen == null || historyAbsen!.data.isEmpty)
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.neutralWhite,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      "Belum ada riwayat absen",
-                      style: TextStyle(color: Colors.grey),
+              // HISTORY SECTION
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.neutralWhite,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
                     ),
-                  ),
-                )
-              else
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: historyAbsen!.data.length,
-                  itemBuilder: (context, index) {
-                    final absen = historyAbsen!.data[index];
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.neutralWhite,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 6,
-                            offset: const Offset(0, 3),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Riwayat Absensi",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primaryDarkBlue,
                           ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            context.pushReplacement(Botnav(initialPage: 1));
+                          },
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Row(
                             children: [
-                              Icon(
-                                absen.checkOutTime != null
-                                    ? Icons.logout
-                                    : Icons.login,
-                                color: _getStatusColor(absen),
-                                size: 20,
+                              Text(
+                                "Lihat Semua",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.primaryDarkBlue,
+                                ),
                               ),
-                              const SizedBox(width: 12),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    _formatDate(absen.attendanceDate),
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                ],
+                              SizedBox(width: 4),
+                              Icon(
+                                Icons.arrow_forward_ios,
+                                size: 12,
+                                color: AppColors.primaryDarkBlue,
                               ),
                             ],
                           ),
-                          Text(
-                            _getStatusText(absen),
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: _getStatusColor(absen),
-                            ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    if (isLoadingHistory)
+                      const Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.primaryDarkBlue,
                           ),
+                        ),
+                      )
+                    else if (historyAbsen == null || historyAbsen!.data.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        child: Center(
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.history,
+                                size: 40,
+                                color: Colors.grey[400],
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                "Belum ada riwayat absen",
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    else
+                      Column(
+                        children: [
+                          ...historyAbsen!.data.take(3).map((absen) {
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppColors.neutralLightGray,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: _getStatusColor(
+                                        absen,
+                                      ).withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Icon(
+                                      absen.checkOutTime != null
+                                          ? Icons.logout
+                                          : Icons.login,
+                                      color: _getStatusColor(absen),
+                                      size: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          _formatDate(absen.attendanceDate),
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          _getStatusText(absen),
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.chevron_right,
+                                    size: 16,
+                                    color: Colors.grey[400],
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                          if (historyAbsen!.data.length > 3)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Center(
+                                child: Text(
+                                  "+ ${historyAbsen!.data.length - 3} riwayat lainnya",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.primaryDarkBlue,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ),
                         ],
                       ),
-                    );
-                  },
+                  ],
                 ),
+              ),
+
+              const SizedBox(height: 16),
             ],
           ),
         ),

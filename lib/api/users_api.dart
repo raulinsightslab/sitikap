@@ -6,10 +6,12 @@ import 'package:sitikap/api/endpoint/endpoint.dart';
 import 'package:sitikap/local/shared_preferenced.dart';
 import 'package:sitikap/models/users/edit_poto_profile.dart';
 import 'package:sitikap/models/users/edit_profile.dart';
+import 'package:sitikap/models/users/forgot_password.dart';
 import 'package:sitikap/models/users/get_profile.dart';
 import 'package:sitikap/models/users/list_batch.dart';
 import 'package:sitikap/models/users/list_pelatihan.dart';
 import 'package:sitikap/models/users/register_model.dart';
+import 'package:sitikap/models/users/reset_password.dart';
 
 class AuthenticationAPI {
   static Future<RegisterUserModel> registerUser({
@@ -199,6 +201,52 @@ class AuthenticationAPI {
     } else {
       final error = json.decode(response.body);
       throw Exception(error["message"] ?? "Gagal mengubah foto");
+    }
+  }
+
+  static Future<Forgotpassword> forgotPassword(String email) async {
+    try {
+      final response = await http.post(
+        Uri.parse(Endpoint.forgotPassword), // Sesuaikan endpoint
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: json.encode({"email": email}),
+      );
+
+      if (response.statusCode == 200) {
+        return forgotpasswordFromJson(response.body);
+      } else {
+        throw Exception('Failed to send OTP: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
+
+  static Future<Resetpw> resetPassword({
+    required String email,
+    required String otp,
+    required String password,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse(Endpoint.resetPassword), // Sesuaikan endpoint
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: json.encode({"email": email, "otp": otp, "password": password}),
+      );
+
+      if (response.statusCode == 200) {
+        return resetpwFromJson(response.body);
+      } else {
+        throw Exception('Failed to reset password: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error: $e');
     }
   }
 }

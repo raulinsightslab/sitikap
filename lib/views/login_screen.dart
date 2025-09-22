@@ -5,6 +5,7 @@ import 'package:sitikap/extensions/extensions.dart';
 import 'package:sitikap/local/shared_preferenced.dart';
 import 'package:sitikap/models/users/register_model.dart';
 import 'package:sitikap/utils/colors.dart';
+import 'package:sitikap/views/lupa_pw_screen.dart';
 import 'package:sitikap/views/register_screen.dart';
 import 'package:sitikap/widget/botnav.dart';
 
@@ -158,7 +159,27 @@ class _LoginScreenState extends State<LoginScreen> {
                     fillColor: AppColors.neutralLightGray,
                   ),
                 ),
-                const SizedBox(height: 24),
+                // const SizedBox(height: 24),
+                // Tambahkan di LoginScreen setelah Row register (sekitar line 150)
+                const SizedBox(height: 16),
+
+                // Link Lupa Password
+                Center(
+                  child: GestureDetector(
+                    onTap: () {
+                      context.push(LupapwScreen());
+                    },
+                    child: Text(
+                      "Lupa Password?",
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primaryDarkBlue,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ),
 
                 // Tombol Login dengan Gradient
                 SizedBox(

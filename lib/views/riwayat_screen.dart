@@ -7,6 +7,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class RiwayatScreen extends StatefulWidget {
+  static const id = "/riwayatabsen";
   const RiwayatScreen({super.key});
 
   @override

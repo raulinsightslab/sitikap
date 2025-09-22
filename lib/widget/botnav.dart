@@ -6,7 +6,10 @@ import 'package:sitikap/views/profile_screen.dart';
 import 'package:sitikap/views/riwayat_screen.dart';
 
 class Botnav extends StatefulWidget {
-  const Botnav({super.key});
+  final int initialPage; // Tambahkan parameter initialPage
+
+  const Botnav({super.key, this.initialPage = 0}); // Default ke 0 (Home)
+
   static const id = "/botnav";
 
   @override
@@ -14,7 +17,7 @@ class Botnav extends StatefulWidget {
 }
 
 class _BotnavState extends State<Botnav> {
-  int currentPage = 0;
+  late int currentPage; // Ubah jadi late
 
   final List<Widget> _pages = [
     const HomeScreen(),
@@ -25,6 +28,13 @@ class _BotnavState extends State<Botnav> {
     const IzinScreen(),
     const ProfileScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Set currentPage berdasarkan initialPage yang diterima
+    currentPage = widget.initialPage;
+  }
 
   void _handleIndexChanged(int index) {
     setState(() {

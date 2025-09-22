@@ -9,7 +9,8 @@ class Endpoint {
   static const String profile = "$baseURL/profile";
   static const String editProfile = "$baseURL/profile";
   static const String profilePhoto = "$baseURL/profile/photo";
-
+  static const String forgotPassword = "$baseURL/forgot-password";
+  static const String resetPassword = "$baseURL/reset-password";
   //absen
   static const String check_in = "$baseURL/absen/check-in";
   static const String check_out = "$baseURL/absen/check-out";
