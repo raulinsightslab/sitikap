@@ -6,6 +6,7 @@ import 'package:sitikap/local/shared_preferenced.dart';
 import 'package:sitikap/models/absen/check_in.dart';
 import 'package:sitikap/models/absen/check_out.dart';
 import 'package:sitikap/models/absen/history_absen_model.dart';
+import 'package:sitikap/models/absen/list_absen_stats.dart';
 import 'package:sitikap/models/absen/today_model.dart';
 
 class AbsenService {
@@ -211,29 +212,32 @@ class AbsenService {
       throw Exception('Get history error: $e');
     }
   }
-  // static Future<RiwayatAbsen> getHistory() async {
-  //   try {
-  //     final token = await PreferenceHandler.getToken();
-  //     if (token == null) throw Exception("Token tidak ditemukan");
 
-  //     final response = await http.get(
-  //       Uri.parse(
-  //         Endpoint.history,
-  //       ), // Pastikan endpoint ini sudah didefinisikan
-  //       headers: _getHeaders(token),
-  //     );
+  //statistic
+  static Future<ListAbsenStats> getStatistikAbsen() async {
+    try {
+      final token = await PreferenceHandler.getToken();
+      if (token == null) throw Exception("Token tidak ditemukan");
 
-  //     print("History Status: ${response.statusCode}");
-  //     print("History Response: ${response.body}");
+      final response = await http.get(
+        Uri.parse(Endpoint.stats),
+        headers: _getHeaders(token),
+      );
 
-  //     if (response.statusCode == 200) {
-  //       return riwayatAbsenFromJson(response.body);
-  //     } else {
-  //       final error = json.decode(response.body);
-  //       throw Exception(error["message"] ?? "Gagal mengambil riwayat absensi");
-  //     }
-  //   } catch (e) {
-  //     throw Exception('Get history error: $e');
-  //   }
-  // }
+      print("Stats Status: ${response.statusCode}");
+      print("Stats Response: ${response.body}");
+
+      if (response.statusCode == 200) {
+        return listAbsenStatsFromJson(response.body);
+      } else {
+        final error = json.decode(response.body);
+        throw Exception(
+          error["message"] ??
+              "Gagal mengambil statistik: ${response.statusCode}",
+        );
+      }
+    } catch (e) {
+      throw Exception('Stats error: $e');
+    }
+  }
 }

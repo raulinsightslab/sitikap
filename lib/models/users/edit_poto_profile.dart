@@ -11,24 +11,24 @@ String editPotoProfileToJson(EditPotoProfile data) =>
     json.encode(data.toJson());
 
 class EditPotoProfile {
-  String message;
-  Data data;
+  String? message;
+  Data? data;
 
-  EditPotoProfile({required this.message, required this.data});
+  EditPotoProfile({this.message, this.data});
 
   factory EditPotoProfile.fromJson(Map<String, dynamic> json) =>
       EditPotoProfile(
         message: json["message"],
-        data: Data.fromJson(json["data"]),
+        data: json["data"] == null ? null : Data.fromJson(json["data"]),
       );
 
-  Map<String, dynamic> toJson() => {"message": message, "data": data.toJson()};
+  Map<String, dynamic> toJson() => {"message": message, "data": data?.toJson()};
 }
 
 class Data {
-  String profilePhoto;
+  String? profilePhoto;
 
-  Data({required this.profilePhoto});
+  Data({this.profilePhoto});
 
   factory Data.fromJson(Map<String, dynamic> json) =>
       Data(profilePhoto: json["profile_photo"]);

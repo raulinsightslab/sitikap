@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:sitikap/api/absen_api.dart';
 import 'package:sitikap/models/absen/today_model.dart';
+import 'package:sitikap/utils/colors.dart';
 
 class AbsenMapScreen extends StatefulWidget {
   const AbsenMapScreen({super.key});
@@ -237,9 +239,14 @@ class _AbsenMapScreenState extends State<AbsenMapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Absensi Lokasi'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+        title: Text(
+          'Absensi Lokasi',
+          style: GoogleFonts.poppins(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: AppColors.neutralWhite,
       ),
       body: Stack(
         children: [
@@ -349,11 +356,11 @@ class _AbsenMapScreenState extends State<AbsenMapScreen> {
           if (isLoading) Center(child: CircularProgressIndicator()),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _getCurrentLocation,
-        child: Icon(Icons.my_location),
-        backgroundColor: Colors.blue,
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: _getCurrentLocation,
+      //   child: Icon(Icons.my_location),
+      //   backgroundColor: Colors.blue,
+      // ),
     );
   }
 }

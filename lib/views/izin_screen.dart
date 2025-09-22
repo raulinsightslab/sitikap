@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:sitikap/api/izin_api.dart';
+import 'package:sitikap/utils/colors.dart';
 
 class IzinScreen extends StatefulWidget {
   const IzinScreen({super.key});
@@ -101,10 +103,19 @@ class _IzinScreenState extends State<IzinScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.neutralWhite,
       appBar: AppBar(
-        title: const Text('Pengajuan Izin'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+        automaticallyImplyLeading: false,
+        title: Center(
+          child: Text(
+            'Pengajuan Izin',
+            style: GoogleFonts.poppins(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        backgroundColor: AppColors.neutralWhite,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -112,21 +123,20 @@ class _IzinScreenState extends State<IzinScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
-            const Text(
-              'Form Pengajuan Izin',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
+            // Text(
+            //   'Form Pengajuan Izin',
+            //   style: GoogleFonts.poppins(
+            //     fontSize: 22,
+            //     fontWeight: FontWeight.bold,
+            //     color: Colors.black,
+            //   ),
+            // ),
+            // SizedBox(height: 8),
+            Text(
               'Isi form berikut untuk mengajukan izin tidak masuk',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey),
             ),
-            const SizedBox(height: 30),
-
+            SizedBox(height: 20),
             // Date Picker
             const Text(
               'Tanggal Izin',
@@ -193,7 +203,7 @@ class _IzinScreenState extends State<IzinScreen> {
               'Jelaskan secara detail alasan Anda tidak dapat hadir',
               style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
 
             // Error Message
             if (_errorMessage.isNotEmpty)
@@ -225,39 +235,70 @@ class _IzinScreenState extends State<IzinScreen> {
             const SizedBox(height: 20),
 
             // Submit Button
+            // SizedBox(
+            //   width: double.infinity,
+            //   height: 50,
+            //   child: ElevatedButton(
+            //     onPressed: _isSubmitting ? null : _submitIzin,
+            //     style: ElevatedButton.styleFrom(
+            //       backgroundColor: Colors.blue,
+            //       foregroundColor: Colors.white,
+            //       shape: RoundedRectangleBorder(
+            //         borderRadius: BorderRadius.circular(8),
+            //       ),
+            //       elevation: 2,
+            //     ),
+            //     child: _isSubmitting
+            //         ? const SizedBox(
+            //             height: 20,
+            //             width: 20,
+            //             child: CircularProgressIndicator(
+            //               strokeWidth: 2,
+            //               valueColor: AlwaysStoppedAnimation<Color>(
+            //                 Colors.white,
+            //               ),
+            //             ),
+            //           )
+            //         : Text(
+            //             'Ajukan Izin',
+            //             style: TextStyle(
+            //               fontSize: 16,
+            //               fontWeight: FontWeight.w600,
+            //             ),
+            //           ),
+            //   ),
+            // ),
             SizedBox(
               width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _isSubmitting ? null : _submitIzin,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  elevation: 2,
+              height: 52,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: AppColors.buttonGradient,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: _isSubmitting
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white,
-                          ),
-                        ),
-                      )
-                    : const Text(
-                        'Ajukan Izin',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    _isSubmitting ? null : _submitIzin;
+                  },
+                  child: const Text(
+                    "Ajukan Izin",
+                    style: TextStyle(
+                      color: AppColors.neutralWhite,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
               ),
             ),
+            const SizedBox(height: 20),
           ],
         ),
       ),

@@ -1,13 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:sitikap/api/users_api.dart';
-import 'package:sitikap/extensions/extensions.dart';
 import 'package:sitikap/local/shared_preferenced.dart';
 import 'package:sitikap/models/users/get_profile.dart';
 import 'package:sitikap/utils/colors.dart';
 import 'package:sitikap/views/onboarding_screen.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -22,10 +22,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isLoggedIn = false;
   bool _isLoading = true;
   bool _isSaving = false;
+  bool _isFetching = false;
   Getuser? _userProfile;
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
+  UniqueKey _avatarKey = UniqueKey();
 
   @override
   void initState() {
@@ -42,29 +45,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
         await _fetchUserProfile();
       }
 
-      setState(() {
-        _userToken = token;
-        _isLoggedIn = isLoggedIn ?? false;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _userToken = token;
+          _isLoggedIn = isLoggedIn ?? false;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      context.showSnackBar("Gagal memuat data pengguna: $e");
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        if (mounted) {
+          context.showSnackBar("Gagal memuat data pengguna: $e");
+        }
+      }
     }
   }
 
   Future<void> _fetchUserProfile() async {
+    if (mounted) {
+      setState(() => _isFetching = true);
+    }
+
     try {
       final profile = await AuthenticationAPI.getProfile();
-      setState(() {
-        _userProfile = profile;
-        _nameController.text = profile.data.name;
-      });
+      if (mounted) {
+        setState(() {
+          _userProfile = profile;
+          _nameController.text = profile.data.name;
+          _emailController.text = profile.data.email;
+          _avatarKey = UniqueKey();
+        });
+      }
     } catch (e) {
       print("Error fetching profile: $e");
-      context.showSnackBar("Gagal memuat profil: $e");
+      if (mounted) {
+        context.showSnackBar("Gagal memuat profil: $e");
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isFetching = false);
+      }
     }
   }
 
@@ -76,91 +99,116 @@ class _ProfileScreenState extends State<ProfileScreen> {
         maxWidth: 800,
         maxHeight: 800,
       );
-      if (image != null) {
+      if (image != null && mounted) {
         setState(() {
           _selectedImage = File(image.path);
         });
       }
     } catch (e) {
       print("Error picking image: $e");
-      context.showSnackBar("Gagal memilih gambar: $e");
+      if (mounted) {
+        context.showSnackBar("Gagal memilih gambar: $e");
+      }
     }
   }
 
-  Future<void> _saveProfile() async {
-    if (_nameController.text.isEmpty) {
-      context.showSnackBar("Nama tidak boleh kosong");
+  Future<void> _saveChanges() async {
+    final name = _nameController.text.trim();
+    if (name.isEmpty) {
+      if (mounted) {
+        context.showSnackBar("Nama tidak boleh kosong");
+      }
       return;
     }
 
-    setState(() {
-      _isSaving = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isSaving = true;
+      });
+    }
 
     try {
-      if (_selectedImage != null) {
-        // Jika ada gambar yang dipilih, update profile dengan foto
-        await AuthenticationAPI.editProfileWithPhoto(
-          name: _nameController.text,
-          jenisKelamin: _userProfile?.data.jenisKelamin ?? "Laki-laki",
-          profilePhoto: _selectedImage!,
-        );
-      } else {
-        // Jika tidak ada gambar baru, update hanya nama
-        await AuthenticationAPI.editProfile(
-          name: _nameController.text,
-          jenisKelamin: _userProfile?.data.jenisKelamin ?? "Laki-laki",
-        );
+      bool updated = false;
+      final profile = await AuthenticationAPI.getProfile();
+
+      // Cek nama berubah
+      if (name.isNotEmpty && name != profile.data.name) {
+        await AuthenticationAPI.updateName(name: name);
+        updated = true;
       }
 
-      // Refresh profile data untuk mendapatkan data terbaru
-      await _fetchUserProfile();
+      // Cek foto berubah
+      if (_selectedImage != null) {
+        await AuthenticationAPI.updatePhoto(profilePhoto: _selectedImage!);
+        updated = true;
+      }
 
-      Navigator.pop(context); // Tutup dialog
-      context.showSnackBar("Profile berhasil diupdate");
+      if (updated) {
+        if (mounted) {
+          context.showSnackBar("Profile berhasil diupdate");
+          await _fetchUserProfile(); // Refresh data
+          Navigator.pop(context); // Tutup dialog
+        }
+      } else {
+        if (mounted) {
+          context.showSnackBar("Tidak ada perubahan");
+          Navigator.pop(context); // Tutup dialog
+        }
+      }
     } catch (e) {
       print("Error updating profile: $e");
-      context.showSnackBar("Gagal mengupdate profil: $e");
+      if (mounted) {
+        context.showSnackBar("Gagal mengupdate profil: $e");
+      }
     } finally {
-      setState(() {
-        _isSaving = false;
-        _selectedImage = null;
-      });
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+          _selectedImage = null;
+        });
+      }
     }
   }
 
   Future<void> _updateProfilePhotoOnly() async {
     if (_selectedImage == null) {
-      context.showSnackBar("Pilih gambar terlebih dahulu");
+      if (mounted) {
+        context.showSnackBar("Pilih gambar terlebih dahulu");
+      }
       return;
     }
 
-    setState(() {
-      _isSaving = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isSaving = true;
+      });
+    }
 
     try {
-      await AuthenticationAPI.editProfilePhoto(profilePhoto: _selectedImage!);
+      await AuthenticationAPI.updatePhoto(profilePhoto: _selectedImage!);
+      await _fetchUserProfile(); // Refresh data
 
-      // Tunggu sebentar untuk memastikan server processed
-      await Future.delayed(const Duration(seconds: 1));
-
-      // Refresh profile data untuk mendapatkan foto terbaru
-      await _fetchUserProfile();
-
-      context.showSnackBar("Foto profil berhasil diupdate");
+      if (mounted) {
+        context.showSnackBar("Foto profil berhasil diupdate");
+      }
     } catch (e) {
       print("Error updating profile photo: $e");
-      context.showSnackBar("Gagal mengupdate foto profil: $e");
+      if (mounted) {
+        context.showSnackBar("Gagal mengupdate foto profil: $e");
+      }
     } finally {
-      setState(() {
-        _isSaving = false;
-        _selectedImage = null;
-      });
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+          _selectedImage = null;
+        });
+      }
     }
   }
 
   void _showEditProfileDialog() {
+    if (!mounted) return;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -209,7 +257,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             CircleAvatar(
                               key: ValueKey(
                                 _userProfile?.data.profilePhotoUrl ??
-                                    'avatar_dialog',
+                                    'avatar_dialog_${DateTime.now().millisecondsSinceEpoch}',
                               ),
                               radius: 40,
                               backgroundColor: AppColors.primaryDarkBlue,
@@ -222,7 +270,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                 .profilePhotoUrl
                                                 .isNotEmpty
                                         ? NetworkImage(
-                                            _userProfile!.data.profilePhotoUrl,
+                                            "${_userProfile!.data.profilePhotoUrl}?t=${DateTime.now().millisecondsSinceEpoch}",
                                           )
                                         : null),
                               child:
@@ -316,6 +364,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
 
+                      const SizedBox(height: 8),
+
+                      // Email (readonly)
+                      Text(
+                        "Email",
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.primaryDarkBlue,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _emailController,
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          hintText: "Email",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: AppColors.neutralLightGray,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                        ),
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: AppColors.primaryDarkBlue,
+                        ),
+                      ),
+
                       const SizedBox(height: 24),
 
                       // Tombol Simpan
@@ -331,7 +412,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                             elevation: 0,
                           ),
-                          onPressed: _isSaving ? null : _saveProfile,
+                          onPressed: _isSaving ? null : _saveChanges,
                           child: _isSaving
                               ? const SizedBox(
                                   width: 20,
@@ -362,6 +443,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _logout() async {
+    if (!mounted) return;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -408,29 +491,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _performLogout() async {
-    setState(() {
-      _isLoading = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
 
     try {
       await PreferenceHandler.removeLogin();
       await PreferenceHandler.removeToken();
 
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        OnboardingScreen.id,
-        (route) => false,
-      );
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          OnboardingScreen.id,
+          (route) => false,
+        );
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      context.showSnackBar("Logout gagal: $e");
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+      if (mounted) {
+        context.showSnackBar("Logout gagal: $e");
+      }
     }
   }
 
   void _showComingSoon(String featureName) {
-    context.showSnackBar("$featureName akan segera hadir!");
+    if (mounted) {
+      context.showSnackBar("$featureName akan segera hadir!");
+    }
   }
 
   @override
@@ -474,10 +567,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   child: Stack(
                                     children: [
                                       CircleAvatar(
-                                        key: ValueKey(
-                                          _userProfile?.data.profilePhotoUrl ??
-                                              'avatar_main',
-                                        ),
+                                        key: _avatarKey,
                                         radius: 50,
                                         backgroundColor:
                                             AppColors.primaryDarkBlue,
@@ -491,9 +581,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                     .profilePhotoUrl
                                                     .isNotEmpty
                                             ? NetworkImage(
-                                                _userProfile!
-                                                    .data
-                                                    .profilePhotoUrl,
+                                                "${_userProfile!.data.profilePhotoUrl}?t=${DateTime.now().millisecondsSinceEpoch}",
                                               )
                                             : null,
                                         child:
@@ -655,7 +743,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
 
                           const SizedBox(height: 16),
-
                           // App Version
                           Text(
                             "SiTIKAP v1.0",
@@ -700,14 +787,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 }
 
 extension on BuildContext {
   void showSnackBar(String message) {
-    ScaffoldMessenger.of(this).showSnackBar(
-      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(this).showSnackBar(
+        SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+      );
+    }
   }
 }
