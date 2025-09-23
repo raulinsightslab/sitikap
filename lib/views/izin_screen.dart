@@ -133,7 +133,8 @@ class _IzinScreenState extends State<IzinScreen> {
             // ),
             // SizedBox(height: 8),
             Text(
-              'Isi form berikut untuk mengajukan izin tidak masuk',
+              'Isi form berikut untuk mengajukan izin jika tidak masuk',
+
               style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey),
             ),
             SizedBox(height: 20),
@@ -240,7 +241,7 @@ class _IzinScreenState extends State<IzinScreen> {
               height: 50,
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  gradient: AppColors.buttonGradient,
+                  gradient: AppColors.gradienbiru,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ElevatedButton(
@@ -280,7 +281,7 @@ class _IzinScreenState extends State<IzinScreen> {
             //   height: 52,
             //   child: DecoratedBox(
             //     decoration: BoxDecoration(
-            //       gradient: AppColors.buttonGradient,
+            //       gradient: AppColors.gradienbiru,
             //       borderRadius: BorderRadius.circular(12),
             //     ),
             //     child: ElevatedButton(

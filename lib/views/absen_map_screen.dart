@@ -6,6 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:sitikap/api/absen_api.dart';
 import 'package:sitikap/models/absen/today_model.dart';
 import 'package:sitikap/utils/colors.dart';
+import 'package:intl/intl.dart';
 
 class AbsenMapScreen extends StatefulWidget {
   const AbsenMapScreen({super.key});
@@ -19,12 +20,10 @@ class _AbsenMapScreenState extends State<AbsenMapScreen> {
   LatLng _currentPosition = LatLng(-6.200000, 106.816666);
   double lat = -6.200000;
   double long = 106.816666;
-  String _currentAddress = "Alamat tidak ditemukan";
+  String _currentAddress = "Mencari lokasi...";
   Marker? _marker;
   bool isLoading = false;
-  AbsenToday? todayAttendance;
-  bool canCheckIn = true;
-  bool canCheckOut = false;
+  AbsenTodayModels? todayAttendance;
 
   @override
   void initState() {
@@ -40,20 +39,18 @@ class _AbsenMapScreenState extends State<AbsenMapScreen> {
   }
 
   Future<void> _loadTodayAttendance() async {
+    if (!mounted) return;
+
     try {
       setState(() => isLoading = true);
-      final attendance = await AbsenService.getAbsenToday();
+      final attendance = await AbsenService.getToday();
 
       if (!mounted) return;
-      setState(() {
-        todayAttendance = attendance;
-        canCheckIn = attendance.data.checkInTime.isEmpty;
-        canCheckOut =
-            attendance.data.checkInTime.isNotEmpty &&
-            attendance.data.checkOutTime == null;
-      });
+      setState(() => todayAttendance = attendance);
     } catch (e) {
       print("Error loading today attendance: $e");
+      if (!mounted) return;
+      // Optional: Tampilkan snackbar error jika diperlukan
     } finally {
       if (!mounted) return;
       setState(() => isLoading = false);
@@ -62,20 +59,13 @@ class _AbsenMapScreenState extends State<AbsenMapScreen> {
 
   Future<void> _getCurrentLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      await Geolocator.openLocationSettings();
-      return;
-    }
+    if (!serviceEnabled) return;
 
     LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) {
+    if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
-      if (permission != LocationPermission.whileInUse &&
-          permission != LocationPermission.always) {
-        return;
-      }
     }
+    if (permission == LocationPermission.deniedForever) return;
 
     try {
       Position position = await Geolocator.getCurrentPosition(
@@ -100,26 +90,21 @@ class _AbsenMapScreenState extends State<AbsenMapScreen> {
 
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(
-        _currentPosition.latitude,
-        _currentPosition.longitude,
+        position.latitude,
+        position.longitude,
       );
 
       if (!mounted) return;
 
       if (placemarks.isNotEmpty) {
-        Placemark place = placemarks[0];
+        final place = placemarks.first;
         setState(() {
           _marker = Marker(
-            markerId: MarkerId("lokasi_saya"),
+            markerId: const MarkerId("lokasi_saya"),
             position: _currentPosition,
-            infoWindow: InfoWindow(
-              title: 'Lokasi Anda',
-              snippet: "${place.street}, ${place.locality}",
-            ),
           );
-
           _currentAddress =
-              "${place.street}, ${place.subLocality}, ${place.locality}, ${place.postalCode}";
+              "${place.street}, ${place.subLocality}, ${place.locality}";
         });
 
         mapController?.animateCamera(
@@ -133,22 +118,24 @@ class _AbsenMapScreenState extends State<AbsenMapScreen> {
       if (!mounted) return;
       setState(() {
         _currentAddress =
-            "Lokasi: ${_currentPosition.latitude.toStringAsFixed(6)}, ${_currentPosition.longitude.toStringAsFixed(6)}";
+            "Lokasi: ${lat.toStringAsFixed(6)}, ${long.toStringAsFixed(6)}";
       });
     }
   }
 
   Future<void> _handleCheckIn() async {
+    if (!mounted) return;
+
     try {
-      if (!mounted) return;
       setState(() => isLoading = true);
 
       final now = DateTime.now();
+      final date = DateFormat("yyyy-MM-dd").format(now);
+      final time = DateFormat("HH:mm").format(now);
+
       final result = await AbsenService.checkIn(
-        attendanceDate:
-            "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}",
-        checkIn:
-            "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}",
+        attendanceDate: date,
+        checkIn: time,
         checkInLat: lat,
         checkInLng: long,
         checkInLocation:
@@ -174,16 +161,18 @@ class _AbsenMapScreenState extends State<AbsenMapScreen> {
   }
 
   Future<void> _handleCheckOut() async {
+    if (!mounted) return;
+
     try {
-      if (!mounted) return;
       setState(() => isLoading = true);
 
       final now = DateTime.now();
+      final date = DateFormat("yyyy-MM-dd").format(now);
+      final time = DateFormat("HH:mm").format(now);
+
       final result = await AbsenService.checkOut(
-        attendanceDate:
-            "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}",
-        checkOut:
-            "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}",
+        attendanceDate: date,
+        checkOut: time,
         checkOutLat: lat,
         checkOutLng: long,
         checkOutLocation:
@@ -208,35 +197,29 @@ class _AbsenMapScreenState extends State<AbsenMapScreen> {
     }
   }
 
-  Future<void> _onMapTap(LatLng position) async {
-    try {
-      if (!mounted) return;
-      setState(() => isLoading = true);
-
-      final pos = Position(
-        latitude: position.latitude,
-        longitude: position.longitude,
-        timestamp: DateTime.now(),
-        accuracy: 0.0,
-        altitude: 0.0,
-        heading: 0.0,
-        speed: 0.0,
-        speedAccuracy: 0.0,
-        altitudeAccuracy: 0.0,
-        headingAccuracy: 0.0,
-      );
-
-      await _updateLocation(pos);
-    } catch (e) {
-      print("Error updating location: $e");
-    } finally {
-      if (!mounted) return;
-      setState(() => isLoading = false);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    // Data dari API getToday (sesuai contoh Postman)
+    final checkInTime = todayAttendance?.data?.checkInTime;
+    final checkOutTime = todayAttendance?.data?.checkOutTime;
+
+    // Tentukan status tombol berdasarkan data API
+    final hasCheckedIn = checkInTime != null && checkInTime.isNotEmpty;
+    final hasCheckedOut = checkOutTime != null && checkOutTime.isNotEmpty;
+
+    String buttonText = "Absen Masuk";
+    Color buttonColor = AppColors.blue;
+    bool showButton = true;
+
+    if (hasCheckedIn && !hasCheckedOut) {
+      buttonText = "Absen Keluar";
+      buttonColor = Colors.orange;
+    } else if (hasCheckedOut) {
+      buttonText = "Absen Selesai";
+      buttonColor = Colors.grey;
+      showButton = false;
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -247,120 +230,226 @@ class _AbsenMapScreenState extends State<AbsenMapScreen> {
           ),
         ),
         backgroundColor: AppColors.neutralWhite,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadTodayAttendance,
+            tooltip: 'Refresh Status',
+          ),
+        ],
       ),
-      body: Stack(
+      body: Column(
         children: [
-          Column(
-            children: [
-              Expanded(
-                child: GoogleMap(
-                  initialCameraPosition: CameraPosition(
-                    target: _currentPosition,
-                    zoom: 12,
-                  ),
-                  onMapCreated: (controller) {
-                    mapController = controller;
-                  },
-                  onTap: _onMapTap,
-                  markers: _marker != null ? {_marker!} : {},
-                  myLocationEnabled: true,
-                  myLocationButtonEnabled: true,
-                  mapType: MapType.normal,
+          // PETA KOTAK KECIL
+          Container(
+            height: 200,
+            margin: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
                 ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: GoogleMap(
+                initialCameraPosition: CameraPosition(
+                  target: _currentPosition,
+                  zoom: 16,
+                ),
+                onMapCreated: (controller) => mapController = controller,
+                markers: _marker != null ? {_marker!} : {},
+                myLocationEnabled: true,
+                zoomControlsEnabled: false,
               ),
-              Container(
-                padding: EdgeInsets.all(16),
-                color: Colors.white,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Lokasi Terpilih:',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+            ),
+          ),
+
+          // CARD STATUS
+          Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Status Hari Ini:',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  const SizedBox(height: 12),
+
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.access_time,
+                        size: 20,
+                        color: hasCheckedIn ? Colors.green : Colors.grey,
                       ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(_currentAddress, style: TextStyle(fontSize: 14)),
-                    SizedBox(height: 8),
-                    Text(
-                      'Koordinat: ${lat.toStringAsFixed(6)}, ${long.toStringAsFixed(6)}',
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                    SizedBox(height: 16),
-                    if (todayAttendance != null) ...[
-                      Text(
-                        'Status Hari Ini:',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Row(
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.access_time, size: 16, color: Colors.grey),
-                          SizedBox(width: 8),
+                          const Text(
+                            'Check In',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
                           Text(
-                            'Check In: ${todayAttendance!.data.checkInTime.isNotEmpty ? todayAttendance!.data.checkInTime : "Belum"}',
+                            checkInTime ?? "--:--",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: hasCheckedIn ? Colors.green : Colors.grey,
+                            ),
                           ),
                         ],
                       ),
-                      SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(Icons.logout, size: 16, color: Colors.grey),
-                          SizedBox(width: 8),
-                          Text(
-                            'Check Out: ${todayAttendance!.data.checkOutTime ?? "Belum"}',
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 16),
                     ],
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.logout,
+                        size: 20,
+                        color: hasCheckedOut ? Colors.blue : Colors.grey,
+                      ),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Check Out',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                          Text(
+                            checkOutTime ?? "--:--",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: hasCheckedOut ? Colors.blue : Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+
+                  if (todayAttendance?.data?.status != null) ...[
+                    const SizedBox(height: 8),
                     Row(
                       children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: canCheckIn && !isLoading
-                                ? _handleCheckIn
-                                : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
-                              foregroundColor: Colors.white,
+                        Icon(Icons.info, size: 20, color: Colors.blue),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Status',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
                             ),
-                            child: Text('CHECK IN'),
-                          ),
-                        ),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: canCheckOut && !isLoading
-                                ? _handleCheckOut
-                                : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              foregroundColor: Colors.white,
+                            Text(
+                              todayAttendance!.data!.status!,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue,
+                              ),
                             ),
-                            child: Text('CHECK OUT'),
-                          ),
+                          ],
                         ),
                       ],
                     ),
                   ],
-                ),
+                ],
               ),
-            ],
+            ),
           ),
-          if (isLoading) Center(child: CircularProgressIndicator()),
+
+          // CARD LOKASI
+          Card(
+            margin: const EdgeInsets.all(16),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Lokasi Saat Ini:',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.location_on, size: 16, color: Colors.grey),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _currentAddress,
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Koordinat: ${lat.toStringAsFixed(6)}, ${long.toStringAsFixed(6)}',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const Spacer(),
+
+          // TOMBOL ABSEN
+          Container(
+            padding: const EdgeInsets.all(16),
+            child: SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: showButton && !isLoading
+                    ? () {
+                        if (!hasCheckedIn) {
+                          _handleCheckIn();
+                        } else if (hasCheckedIn && !hasCheckedOut) {
+                          _handleCheckOut();
+                        }
+                      }
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: buttonColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : Text(
+                        buttonText,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+              ),
+            ),
+          ),
         ],
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: _getCurrentLocation,
-      //   child: Icon(Icons.my_location),
-      //   backgroundColor: Colors.blue,
-      // ),
     );
   }
 }

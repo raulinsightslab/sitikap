@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sitikap/utils/colors.dart';
+import 'package:sitikap/views/absen1_map_screen.dart';
 import 'package:sitikap/views/absen_map_screen.dart';
 import 'package:sitikap/views/home_screen.dart';
 import 'package:sitikap/views/izin_screen.dart';
@@ -58,9 +60,9 @@ class _BotnavState extends State<Botnav> {
       // FAB fingerprint - Navigate ke AbsenMapScreen
       floatingActionButton: FloatingActionButton(
         onPressed: _navigateToAbsenMap,
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.blue,
         shape: CircleBorder(),
-        child: Icon(Icons.fingerprint, color: Colors.black, size: 30),
+        child: Icon(Icons.fingerprint, color: AppColors.neutralWhite, size: 30),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
@@ -79,7 +81,7 @@ class _BotnavState extends State<Botnav> {
                 icon: Icon(
                   Icons.home_outlined,
                   size: 30,
-                  color: currentPage == 0 ? Colors.black : Colors.grey,
+                  color: currentPage == 0 ? AppColors.blue : Colors.grey,
                 ),
                 onPressed: () => _handleIndexChanged(0),
               ),
@@ -87,7 +89,7 @@ class _BotnavState extends State<Botnav> {
                 icon: Icon(
                   Icons.history,
                   size: 30,
-                  color: currentPage == 1 ? Colors.black : Colors.grey,
+                  color: currentPage == 1 ? AppColors.blue : Colors.grey,
                 ),
                 onPressed: () => _handleIndexChanged(1),
               ),
@@ -96,7 +98,7 @@ class _BotnavState extends State<Botnav> {
                 icon: Icon(
                   Icons.mail_outline_outlined,
                   size: 30,
-                  color: currentPage == 3 ? Colors.black : Colors.grey,
+                  color: currentPage == 3 ? AppColors.blue : Colors.grey,
                 ),
                 onPressed: () => _handleIndexChanged(3),
               ),
@@ -104,7 +106,7 @@ class _BotnavState extends State<Botnav> {
                 icon: Icon(
                   Icons.person_outline,
                   size: 30,
-                  color: currentPage == 4 ? Colors.black : Colors.grey,
+                  color: currentPage == 4 ? AppColors.blue : Colors.grey,
                 ),
                 onPressed: () => _handleIndexChanged(4),
               ),

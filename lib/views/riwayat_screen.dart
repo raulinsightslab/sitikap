@@ -24,7 +24,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
   bool _isExpanded = true;
 
   // Warna status yang selaras dengan gradient
-  final Color _tepatWaktuColor = const Color(0xFF00C853);
+  final Color _tepatWaktuColor = AppColors.blue;
   final Color _tepatWaktuLightColor = const Color(0xFFE8F5E8);
   final Color _terlambatColor = const Color(0xFFFF9800);
   final Color _terlambatLightColor = const Color(0xFFFFF3E0);
@@ -222,15 +222,15 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
               },
               calendarStyle: CalendarStyle(
                 selectedDecoration: BoxDecoration(
-                  gradient: AppColors.buttonGradient,
+                  gradient: AppColors.gradienbiru,
                   shape: BoxShape.circle,
                 ),
                 rangeStartDecoration: BoxDecoration(
-                  gradient: AppColors.buttonGradient,
+                  gradient: AppColors.gradienbiru,
                   shape: BoxShape.circle,
                 ),
                 rangeEndDecoration: BoxDecoration(
-                  gradient: AppColors.buttonGradient,
+                  gradient: AppColors.gradienbiru,
                   shape: BoxShape.circle,
                 ),
                 rangeHighlightColor: AppColors.primaryDarkBlue.withOpacity(0.1),
@@ -346,7 +346,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
         Expanded(
           child: Container(
             decoration: BoxDecoration(
-              gradient: AppColors.buttonGradient,
+              gradient: AppColors.gradienbiru,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(

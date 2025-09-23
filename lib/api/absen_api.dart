@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:sitikap/api/endpoint/endpoint.dart';
 import 'package:sitikap/local/shared_preferenced.dart';
 import 'package:sitikap/models/absen/check_in.dart';
@@ -104,44 +105,20 @@ class AbsenService {
   }
 
   // Get Today's Attendance - STATIC (DIPERBAIKI)
-  static Future<AbsenToday> getAbsenToday() async {
-    try {
-      final token = await PreferenceHandler.getToken();
-      if (token == null) throw Exception("Token tidak ditemukan");
+  static Future<AbsenTodayModels> getToday() async {
+    final token = await PreferenceHandler.getToken();
+    final today = DateFormat("yyyy-MM-dd").format(DateTime.now());
+    final url = Uri.parse(Endpoint.today);
 
-      final response = await http.get(
-        Uri.parse(Endpoint.today), // PASTIKAN INI ENDPOINT YANG BENAR
-        headers: _getHeaders(token),
-      );
-
-      // DEBUG print response
-      print("Today Status: ${response.statusCode}");
-      print("Today Response: ${response.body}");
-
-      if (response.statusCode == 200) {
-        return absenTodayFromJson(response.body);
-      } else if (response.statusCode == 404) {
-        // Handle case ketika tidak ada data absensi hari ini
-        return AbsenToday(
-          message: "Tidak ada absensi hari ini",
-          data: Data1(
-            attendanceDate: DateTime.now(),
-            checkInTime: "",
-            checkOutTime: null,
-            checkInAddress: "",
-            checkOutAddress: null,
-            status: "belum_absen",
-            alasanIzin: null,
-          ),
-        );
-      } else {
-        final error = json.decode(response.body);
-        throw Exception(
-          error["message"] ?? "Gagal mengambil data absensi hari ini",
-        );
-      }
-    } catch (e) {
-      throw Exception('Get today attendance error: $e');
+    final response = await http.get(
+      url,
+      headers: {"Accept": "application/json", "Authorization": "Bearer $token"},
+    );
+    if (response.statusCode == 200) {
+      return AbsenTodayModels.fromJson(json.decode(response.body));
+    } else {
+      final error = json.decode(response.body);
+      throw Exception(error["message"] ?? "Get data is not valid");
     }
   }
 

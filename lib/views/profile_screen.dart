@@ -208,7 +208,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _showEditProfileDialog() {
     if (!mounted) return;
-
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -247,9 +246,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 20),
-
                       // Foto Profil
                       Center(
                         child: Stack(
@@ -444,7 +441,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _logout() async {
     if (!mounted) return;
-
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -524,6 +520,124 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (mounted) {
       context.showSnackBar("$featureName akan segera hadir!");
     }
+  }
+
+  void _showAboutDialog() {
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header Dialog
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Tentang Aplikasi",
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primaryDarkBlue,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, size: 20),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Logo Aplikasi (optional)
+                  Center(
+                    child: CircleAvatar(
+                      radius: 50,
+                      backgroundColor: AppColors.neutralWhite,
+                      child: ClipOval(
+                        child: Image.asset(
+                          "assets/images/logo_sitikap1.png",
+                          width: 140, // 2x radius
+                          height: 100,
+                          fit: BoxFit.cover, // biar penuh
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Deskripsi Aplikasi
+                  Text(
+                    "SITIKAP (Sistem Absensi Digital PPKD Jakarta Pusat) adalah aplikasi absensi "
+                    "yang membantu pencatatan kehadiran, izin, dan rekap data peserta pelatihan "
+                    "secara real-time. Dirancang dengan antarmuka modern, praktis, "
+                    "dan mudah digunakan.",
+                    style: GoogleFonts.poppins(
+                      color: AppColors.neutralDarkGray,
+                      fontSize: 14,
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.justify,
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Informasi Versi
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.info_outline,
+                        color: AppColors.blue,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        "Versi 1.0.0",
+                        style: GoogleFonts.poppins(
+                          color: AppColors.neutralGray,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  // Tombol Tutup
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        "Tutup",
+                        style: GoogleFonts.poppins(
+                          color: AppColors.blue,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -702,8 +816,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 _buildMenuOption(
                                   icon: Icons.info_outline,
                                   title: "Tentang Aplikasi",
-                                  onTap: () =>
-                                      _showComingSoon("Tentang Aplikasi"),
+                                  onTap: _showAboutDialog,
                                 ),
                               ],
                             ),
@@ -718,7 +831,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               height: 52,
                               child: DecoratedBox(
                                 decoration: BoxDecoration(
-                                  gradient: AppColors.buttonGradient,
+                                  gradient: AppColors.gradienbiru,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: ElevatedButton(

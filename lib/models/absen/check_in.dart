@@ -18,6 +18,8 @@ class AbsenInmodel {
   factory AbsenInmodel.fromJson(Map<String, dynamic> json) =>
       AbsenInmodel(message: json["message"], data: Data.fromJson(json["data"]));
 
+  get status => null;
+
   Map<String, dynamic> toJson() => {"message": message, "data": data.toJson()};
 }
 

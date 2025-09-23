@@ -20,6 +20,8 @@ class AbsenOutmodel {
     data: Data.fromJson(json["data"]),
   );
 
+  get status => null;
+
   Map<String, dynamic> toJson() => {"message": message, "data": data.toJson()};
 }
 

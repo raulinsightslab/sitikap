@@ -130,7 +130,7 @@ class _LupapwScreenState extends State<LupapwScreen> {
                   height: 52,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      gradient: AppColors.buttonGradient,
+                      gradient: AppColors.gradienbiru,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: ElevatedButton(

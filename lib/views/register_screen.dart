@@ -635,7 +635,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ? const Center(child: CircularProgressIndicator())
                     : DecoratedBox(
                         decoration: BoxDecoration(
-                          gradient: AppColors.buttonGradient,
+                          gradient: AppColors.gradienbiru,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: ElevatedButton(

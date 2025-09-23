@@ -43,4 +43,9 @@ class AppColors {
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
+  static const LinearGradient gradienbiru = LinearGradient(
+    colors: [Colors.blue, AppColors.blue],
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+  );
 }

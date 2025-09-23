@@ -284,6 +284,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                               AppColors.primaryDarkBlue,
                               AppColors.accentLightBlue,
                             ],
+
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -393,7 +394,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       child: Padding(
                         padding: const EdgeInsets.only(bottom: 20),
                         child: Text(
-                          "v1.0 • Powered by PPKD",
+                          "© 2025 Raul. All rights reserved.",
                           style: GoogleFonts.poppins(
                             color: AppColors.neutralWhite.withOpacity(0.7),
                             fontSize: 12,

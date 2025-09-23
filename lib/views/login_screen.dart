@@ -233,7 +233,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   height: 52,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      gradient: AppColors.buttonGradient,
+                      gradient: LinearGradient(
+                        colors: [
+                          // Color.fromARGB(255, 58, 75, 101),
+                          Colors.blue,
+                          AppColors.blue,
+                        ],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: ElevatedButton(
