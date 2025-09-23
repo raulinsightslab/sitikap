@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:sitikap/models/absen/history_absen_model.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 import 'package:sitikap/views/login_screen.dart';
 import 'package:sitikap/views/onboarding_screen.dart';
 import 'package:sitikap/views/splash_screen.dart';
 import 'package:sitikap/widget/botnav.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('id_ID', null);
+  Intl.defaultLocale = 'id_ID';
   runApp(const MyApp());
 }
 

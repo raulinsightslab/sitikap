@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lottie/lottie.dart';
 import 'package:sitikap/api/users_api.dart';
 import 'package:sitikap/extensions/extensions.dart';
 import 'package:sitikap/models/users/list_batch.dart' as batch_model;
@@ -55,14 +56,65 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     _pageController.dispose();
     super.dispose();
+  }
+
+  // Helper method untuk safe setState
+  void safeSetState(VoidCallback callback) {
+    if (mounted) {
+      setState(callback);
+    }
+  }
+
+  // Method untuk menampilkan Lottie sukses
+  void showSuccessLottie(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) {
+            Navigator.of(context).pop();
+            context.pushReplacement(const LoginScreen());
+          }
+        });
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: SizedBox(
+            height: 400,
+            width: 400,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Lottie.asset("assets/lottie/login_succes.json", height: 200),
+                const SizedBox(height: 10),
+                Text(
+                  "Registrasi Berhasil 🎉",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  "Silakan login untuk melanjutkan",
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   // Method untuk mengambil data batch dan training
   Future<void> _loadBatchAndTrainingData() async {
     try {
-      setState(() {
+      safeSetState(() {
         _isLoadingData = true;
         _errorMessage = null;
       });
@@ -75,7 +127,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final batchData = results[0] as batch_model.Listbatch;
       final trainingData = results[1] as training_model.Listpelatihan;
 
-      setState(() {
+      safeSetState(() {
         _batches = batchData.data;
         _trainings = trainingData.data;
         _isLoadingData = false;
@@ -84,7 +136,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         if (_trainings.isNotEmpty) _selectedTraining = null;
       });
     } catch (e) {
-      setState(() {
+      safeSetState(() {
         _errorMessage = "Gagal memuat data: ${e.toString()}";
         _isLoadingData = false;
       });
@@ -101,23 +153,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       if (image != null) {
-        setState(() {
+        safeSetState(() {
           _profilePhoto = File(image.path);
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Gagal memilih gambar: $e")));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Gagal memilih gambar: $e")));
+      }
     }
   }
 
   // Method untuk register
   Future<void> _register() async {
     if (_profilePhoto == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Harap pilih foto profil")));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Harap pilih foto profil")),
+        );
+      }
       return;
     }
 
@@ -127,13 +183,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _selectedGender == null ||
         _selectedBatch == null ||
         _selectedTraining == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Harap isi semua field")));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Harap isi semua field")));
+      }
       return;
     }
 
-    setState(() {
+    safeSetState(() {
       _isLoading = true;
       _errorMessage = null;
     });
@@ -149,21 +207,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
         trainingId: _selectedTraining!.id,
       );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result.message ?? "Registrasi berhasil")),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result.message ?? "Registrasi berhasil")),
+        );
 
-      // Navigasi ke halaman login
-      context.pushReplacement(const LoginScreen());
+        // Tampilkan Lottie sukses
+        showSuccessLottie(context);
+      }
     } catch (e) {
-      setState(() {
+      safeSetState(() {
         _errorMessage = e.toString();
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Registrasi gagal: ${e.toString()}")),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Registrasi gagal: ${e.toString()}")),
+        );
+      }
     } finally {
-      setState(() {
+      safeSetState(() {
         _isLoading = false;
       });
     }
@@ -177,7 +239,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         curve: Curves.easeInOut,
       );
     } else {
-      context.pushReplacement(const OnboardingScreen());
+      if (mounted) {
+        context.pushReplacement(const OnboardingScreen());
+      }
     }
   }
 
@@ -295,7 +359,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               DropdownMenuItem(value: "P", child: Text("Perempuan")),
             ],
             onChanged: (value) {
-              setState(() {
+              safeSetState(() {
                 _selectedGender = value;
               });
             },
@@ -350,7 +414,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     );
                   }).toList(),
                   onChanged: (value) {
-                    setState(() {
+                    safeSetState(() {
                       _selectedBatch = value;
                     });
                   },
@@ -413,10 +477,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                             maxLines: 2,
                                           ),
                                           onTap: () {
-                                            setState(() {
+                                            safeSetState(() {
                                               _selectedTraining = training;
                                             });
-                                            Navigator.pop(context);
+                                            if (mounted) {
+                                              Navigator.pop(context);
+                                            }
                                           },
                                         ),
                                       );
@@ -436,7 +502,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // Widget untuk form password (halaman 3) - DIUBAH: Hapus tombol daftar dari sini
+  // Widget untuk form password (halaman 3)
   Widget _buildPasswordForm() {
     return SingleChildScrollView(
       child: Column(
@@ -531,7 +597,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: PageView(
                   controller: _pageController,
                   onPageChanged: (page) {
-                    setState(() {
+                    safeSetState(() {
                       _currentPage = page;
                     });
                   },
@@ -543,7 +609,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
 
-              // Navigation Buttons - DIUBAH: Tombol daftar dipindah ke sini
+              // Navigation Buttons
               SizedBox(
                 width: double.infinity,
                 height: 50,

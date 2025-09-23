@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sitikap/extensions/extensions.dart';
 import 'package:sitikap/local/shared_preferenced.dart';
 import 'package:sitikap/utils/colors.dart';
@@ -150,7 +151,6 @@ class _SplashScreenState extends State<SplashScreen>
             ),
 
             const SizedBox(height: 24),
-
             // Text SiTIKAP animasi
             FadeTransition(
               opacity: _textOpacity,
@@ -158,20 +158,25 @@ class _SplashScreenState extends State<SplashScreen>
                 position: _textSlide,
                 child: RichText(
                   text: TextSpan(
-                    style: const TextStyle(
-                      fontSize: 34,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Roboto',
+                    style: TextStyle(
+                      fontSize: 37,
+                      fontWeight: FontWeight.w600,
                       letterSpacing: 1.2,
                     ),
                     children: [
-                      const TextSpan(
+                      TextSpan(
                         text: "Si",
-                        style: TextStyle(color: Colors.white),
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       TextSpan(
                         text: "TIKAP",
-                        style: TextStyle(color: Colors.orangeAccent),
+                        style: GoogleFonts.poppins(
+                          color: Colors.orangeAccent,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),

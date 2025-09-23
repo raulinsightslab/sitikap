@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sitikap/extensions/extensions.dart';
 import 'package:sitikap/utils/colors.dart';
 import 'package:sitikap/views/login_screen.dart';
 import 'package:sitikap/views/register_screen.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});

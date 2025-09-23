@@ -235,69 +235,76 @@ class _IzinScreenState extends State<IzinScreen> {
             const SizedBox(height: 20),
 
             // Submit Button
-            // SizedBox(
-            //   width: double.infinity,
-            //   height: 50,
-            //   child: ElevatedButton(
-            //     onPressed: _isSubmitting ? null : _submitIzin,
-            //     style: ElevatedButton.styleFrom(
-            //       backgroundColor: Colors.blue,
-            //       foregroundColor: Colors.white,
-            //       shape: RoundedRectangleBorder(
-            //         borderRadius: BorderRadius.circular(8),
-            //       ),
-            //       elevation: 2,
-            //     ),
-            //     child: _isSubmitting
-            //         ? const SizedBox(
-            //             height: 20,
-            //             width: 20,
-            //             child: CircularProgressIndicator(
-            //               strokeWidth: 2,
-            //               valueColor: AlwaysStoppedAnimation<Color>(
-            //                 Colors.white,
-            //               ),
-            //             ),
-            //           )
-            //         : Text(
-            //             'Ajukan Izin',
-            //             style: TextStyle(
-            //               fontSize: 16,
-            //               fontWeight: FontWeight.w600,
-            //             ),
-            //           ),
-            //   ),
-            // ),
             SizedBox(
               width: double.infinity,
-              height: 52,
+              height: 50,
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: AppColors.buttonGradient,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ElevatedButton(
+                  onPressed: _isSubmitting ? null : _submitIzin,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     shadowColor: Colors.transparent,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(8),
                     ),
+                    elevation: 2,
                   ),
-                  onPressed: () {
-                    _isSubmitting ? null : _submitIzin;
-                  },
-                  child: const Text(
-                    "Ajukan Izin",
-                    style: TextStyle(
-                      color: AppColors.neutralWhite,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                          ),
+                        )
+                      : Text(
+                          'Ajukan Izin',
+                          style: TextStyle(
+                            color: AppColors.neutralWhite,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
               ),
             ),
+            // SizedBox(
+            //   width: double.infinity,
+            //   height: 52,
+            //   child: DecoratedBox(
+            //     decoration: BoxDecoration(
+            //       gradient: AppColors.buttonGradient,
+            //       borderRadius: BorderRadius.circular(12),
+            //     ),
+            //     child: ElevatedButton(
+            //       style: ElevatedButton.styleFrom(
+            //         backgroundColor: Colors.transparent,
+            //         shadowColor: Colors.transparent,
+            //         shape: RoundedRectangleBorder(
+            //           borderRadius: BorderRadius.circular(12),
+            //         ),
+            //       ),
+            //       onPressed: () {
+            //         _isSubmitting ? null : _submitIzin;
+            //       },
+            //       child: const Text(
+            //         "Ajukan Izin",
+            //         style: TextStyle(
+            //           color: AppColors.neutralWhite,
+            //           fontSize: 16,
+            //           fontWeight: FontWeight.bold,
+            //         ),
+            //       ),
+            //     ),
+            //   ),
+            // ),
             const SizedBox(height: 20),
           ],
         ),

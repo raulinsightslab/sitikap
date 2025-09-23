@@ -33,9 +33,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> getuserdata() async {
     try {
       final data = await AuthenticationAPI.getProfile();
-      setState(() {
-        user = data;
-      });
+      if (mounted) {
+        setState(() {
+          user = data;
+        });
+      }
     } catch (e) {
       print("user get error: $e");
     }
@@ -43,24 +45,32 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> getHistoryAbsen() async {
     try {
-      setState(() => isLoadingHistory = true);
+      if (mounted) {
+        setState(() => isLoadingHistory = true);
+      }
       final history = await AbsenService.getHistory();
-      setState(() {
-        historyAbsen = history;
-      });
+      if (mounted) {
+        setState(() {
+          historyAbsen = history;
+        });
+      }
     } catch (e) {
       print("Error getting history: $e");
     } finally {
-      setState(() => isLoadingHistory = false);
+      if (mounted) {
+        setState(() => isLoadingHistory = false);
+      }
     }
   }
 
   Future<void> getStats() async {
     try {
       final statsData = await AbsenService.getStatistikAbsen();
-      setState(() {
-        stats = statsData;
-      });
+      if (mounted) {
+        setState(() {
+          stats = statsData;
+        });
+      }
     } catch (e) {
       print("Error getting stats: $e");
     }
@@ -94,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
     } else if (absen.checkInTime.isNotEmpty) {
       return "Check In: ${absen.checkInTime}";
     }
-    return "Tidak Absen";
+    return "Tidak Hadir";
   }
 
   Color _getStatusColor(Datum absen) {
@@ -323,7 +333,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Selamat Datang, $user",
+                            "Selamat Datang,",
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.black54,

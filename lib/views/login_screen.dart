@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
 import 'package:sitikap/api/users_api.dart';
 import 'package:sitikap/extensions/extensions.dart';
 import 'package:sitikap/local/shared_preferenced.dart';
@@ -25,48 +26,107 @@ class _LoginScreenState extends State<LoginScreen> {
   RegisterUserModel? user;
   String? errorMessage;
 
+  // Helper method for safe setState
+  void safeSetState(VoidCallback callback) {
+    if (mounted) {
+      setState(callback);
+    }
+  }
+
+  void showSuccessLottie(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        Future.delayed(const Duration(milliseconds: 1300), () {
+          if (mounted) {
+            Navigator.of(context).pop();
+            context.pushReplacement(const Botnav());
+          }
+        });
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: SizedBox(
+            height: 400,
+
+            width: 400,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Lottie.asset("assets/lottie/login_succes.json", height: 200),
+                const SizedBox(height: 10),
+                Text(
+                  "Login Berhasil 🎉",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void loginUser() async {
-    setState(() {
+    safeSetState(() {
       isLoading = true;
       errorMessage = null;
     });
+
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
+
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Email dan Kata Sandi tidak boleh kosong"),
-        ),
-      );
-      isLoading = false;
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Email dan Kata Sandi tidak boleh kosong"),
+          ),
+        );
+      }
+      safeSetState(() => isLoading = false);
       return;
     }
+
     try {
       final results = await AuthenticationAPI.loginUser(
         email: email,
         password: password,
       );
-      setState(() {
+
+      safeSetState(() {
         user = results;
       });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Login berhasil 🎉")));
-      PreferenceHandler.saveToken(user?.data?.token.toString() ?? "");
-      context.pushReplacement(const Botnav());
+
+      await PreferenceHandler.saveToken(user?.data?.token.toString() ?? "");
+
+      if (mounted) {
+        showSuccessLottie(context);
+      }
       print(user?.toJson());
     } catch (e) {
       print(e);
-      setState(() {
+      safeSetState(() {
         errorMessage = e.toString();
       });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(errorMessage.toString())));
+
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(errorMessage.toString())));
+      }
     } finally {
-      setState(() {});
-      isLoading = false;
+      safeSetState(() => isLoading = false);
     }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -81,19 +141,6 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Tombol Back ke Onboarding
-                // IconButton(
-                //   icon: const Icon(
-                //     Icons.arrow_back,
-                //     color: AppColors.primaryDarkBlue,
-                //   ),
-                //   onPressed: () {
-                //     context.pushReplacement(OnboardingScreen());
-                //   },
-                // ),
-                // const SizedBox(height: 20),
-
-                // Judul
                 Center(
                   child: Text(
                     "Selamat Datang Kembali 👋",
@@ -150,7 +197,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             : Icons.visibility,
                       ),
                       onPressed: () {
-                        setState(() {
+                        safeSetState(() {
                           obscurePassword = !obscurePassword;
                         });
                       },
@@ -159,27 +206,26 @@ class _LoginScreenState extends State<LoginScreen> {
                     fillColor: AppColors.neutralLightGray,
                   ),
                 ),
-                // const SizedBox(height: 24),
-                // Tambahkan di LoginScreen setelah Row register (sekitar line 150)
                 const SizedBox(height: 16),
 
                 // Link Lupa Password
-                Center(
+                Align(
+                  alignment: Alignment.centerRight,
                   child: GestureDetector(
                     onTap: () {
-                      context.push(LupapwScreen());
+                      context.push(const LupapwScreen());
                     },
                     child: Text(
                       "Lupa Password?",
                       style: GoogleFonts.poppins(
-                        fontSize: 14,
+                        fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.primaryDarkBlue,
-                        decoration: TextDecoration.underline,
+                        color: AppColors.primaryDarkBlue.withOpacity(0.7),
                       ),
                     ),
                   ),
                 ),
+                const SizedBox(height: 16),
 
                 // Tombol Login dengan Gradient
                 SizedBox(
@@ -198,17 +244,26 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      onPressed: () {
-                        loginUser();
-                      },
-                      child: const Text(
-                        "Login",
-                        style: TextStyle(
-                          color: AppColors.neutralWhite,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      onPressed: isLoading ? null : loginUser,
+                      child: isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  AppColors.neutralWhite,
+                                ),
+                              ),
+                            )
+                          : const Text(
+                              "Login",
+                              style: TextStyle(
+                                color: AppColors.neutralWhite,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
                 ),
@@ -228,14 +283,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(width: 6),
                     GestureDetector(
                       onTap: () {
-                        context.push(RegisterScreen());
+                        context.push(const RegisterScreen());
                       },
                       child: Text(
                         "Daftar sekarang",
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black, // 🔥 biar standout
+                          color: Colors.black,
                         ),
                       ),
                     ),

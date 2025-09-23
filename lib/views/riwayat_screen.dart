@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:sitikap/api/absen_api.dart';
 import 'package:sitikap/models/absen/history_absen_model.dart';
 import 'package:sitikap/utils/colors.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class RiwayatScreen extends StatefulWidget {
   static const id = "/riwayatabsen";
@@ -23,13 +23,13 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
   final ScrollController _scrollController = ScrollController();
   bool _isExpanded = true;
 
-  // Warna status sesuai permintaan
-  final Color _tepatWaktuColor = const Color(0xFF34C759);
-  final Color _tepatWaktuLightColor = const Color(0xFF6EFFA0);
-  final Color _terlambatColor = const Color(0xFFFFC857);
-  final Color _terlambatLightColor = const Color(0xFFFFB84D);
-  final Color _tidakHadirColor = const Color(0xFFFF6B6B);
-  final Color _tidakHadirLightColor = const Color(0xFFFF7E87);
+  // Warna status yang selaras dengan gradient
+  final Color _tepatWaktuColor = const Color(0xFF00C853);
+  final Color _tepatWaktuLightColor = const Color(0xFFE8F5E8);
+  final Color _terlambatColor = const Color(0xFFFF9800);
+  final Color _terlambatLightColor = const Color(0xFFFFF3E0);
+  final Color _tidakHadirColor = const Color(0xFFF44336);
+  final Color _tidakHadirLightColor = const Color(0xFFFFEBEE);
 
   @override
   void initState() {
@@ -50,31 +50,32 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
 
   void _applyDateFilter() {
     _historyFuture.then((riwayatAbsen) {
-      setState(() {
-        if (_selectedStartDate != null && _selectedEndDate != null) {
-          // Pastikan startDate lebih kecil dari endDate
-          DateTime startDate = _selectedStartDate!;
-          DateTime endDate = _selectedEndDate!;
+      if (mounted) {
+        setState(() {
+          if (_selectedStartDate != null && _selectedEndDate != null) {
+            DateTime startDate = _selectedStartDate!;
+            DateTime endDate = _selectedEndDate!;
 
-          if (startDate.isAfter(endDate)) {
-            // Tukar jika startDate lebih besar dari endDate
-            DateTime temp = startDate;
-            startDate = endDate;
-            endDate = temp;
+            if (startDate.isAfter(endDate)) {
+              DateTime temp = startDate;
+              startDate = endDate;
+              endDate = temp;
+            }
+
+            _filteredData = riwayatAbsen.data.where((absen) {
+              final attendanceDate = absen.attendanceDate;
+              return (attendanceDate.isAfter(
+                    startDate.subtract(const Duration(days: 1)),
+                  ) &&
+                  attendanceDate.isBefore(
+                    endDate.add(const Duration(days: 1)),
+                  ));
+            }).toList();
+          } else {
+            _filteredData = riwayatAbsen.data;
           }
-
-          _filteredData = riwayatAbsen.data.where((absen) {
-            final attendanceDate = absen.attendanceDate;
-            // Filter data antara startDate dan endDate (inklusif)
-            return (attendanceDate.isAfter(
-                  startDate.subtract(const Duration(days: 1)),
-                ) &&
-                attendanceDate.isBefore(endDate.add(const Duration(days: 1))));
-          }).toList();
-        } else {
-          _filteredData = riwayatAbsen.data;
-        }
-      });
+        });
+      }
     });
   }
 
@@ -83,9 +84,11 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
       _selectedStartDate = null;
       _selectedEndDate = null;
       _historyFuture.then((riwayatAbsen) {
-        setState(() {
-          _filteredData = riwayatAbsen.data;
-        });
+        if (mounted) {
+          setState(() {
+            _filteredData = riwayatAbsen.data;
+          });
+        }
       });
     });
   }
@@ -102,21 +105,23 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
       backgroundColor: AppColors.neutralWhite,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Center(
-          child: Text(
-            'Riwayat Absensi',
-            style: GoogleFonts.poppins(
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-            ),
+        title: Text(
+          'Riwayat Absensi',
+          style: GoogleFonts.poppins(
+            color: Colors.black,
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
           ),
         ),
         backgroundColor: AppColors.neutralWhite,
+        elevation: 0,
+        centerTitle: true,
         actions: [
           IconButton(
             icon: Icon(
-              _isExpanded ? Icons.expand_less : Icons.expand_more,
+              _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
               color: AppColors.primaryDarkBlue,
+              size: 28,
             ),
             onPressed: _toggleCalendar,
           ),
@@ -125,250 +130,27 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
       body: RefreshIndicator(
         onRefresh: _onRefresh,
         color: AppColors.primaryDarkBlue,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          controller: _scrollController,
-          child: Column(
-            children: [
-              // Kalender Filter
-              AnimatedCrossFade(
-                duration: const Duration(milliseconds: 300),
-                crossFadeState: _isExpanded
-                    ? CrossFadeState.showFirst
-                    : CrossFadeState.showSecond,
-                firstChild: Card(
-                  margin: const EdgeInsets.all(16),
-                  elevation: 4,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        TableCalendar(
-                          firstDay: DateTime.now().subtract(
-                            const Duration(days: 365),
-                          ),
-                          lastDay: DateTime.now().add(
-                            const Duration(days: 365),
-                          ),
-                          focusedDay: _focusedDay,
-                          selectedDayPredicate: (day) {
-                            return isSameDay(_selectedStartDate, day) ||
-                                isSameDay(_selectedEndDate, day);
-                          },
-                          rangeStartDay: _selectedStartDate,
-                          rangeEndDay: _selectedEndDate,
-                          onDaySelected: (selectedDay, focusedDay) {
-                            setState(() {
-                              _focusedDay = focusedDay;
-                              if (_selectedStartDate == null) {
-                                _selectedStartDate = selectedDay;
-                              } else if (_selectedEndDate == null) {
-                                _selectedEndDate = selectedDay;
-                                // Pastikan startDate selalu lebih kecil dari endDate
-                                if (_selectedStartDate!.isAfter(
-                                  _selectedEndDate!,
-                                )) {
-                                  DateTime temp = _selectedStartDate!;
-                                  _selectedStartDate = _selectedEndDate;
-                                  _selectedEndDate = temp;
-                                }
-                              } else {
-                                _selectedStartDate = selectedDay;
-                                _selectedEndDate = null;
-                              }
-                            });
-                          },
-                          calendarStyle: CalendarStyle(
-                            selectedDecoration: BoxDecoration(
-                              color: AppColors.secondaryBlue,
-                              shape: BoxShape.circle,
-                            ),
-                            rangeStartDecoration: BoxDecoration(
-                              color: AppColors.secondaryBlue,
-                              shape: BoxShape.circle,
-                            ),
-                            rangeEndDecoration: BoxDecoration(
-                              color: AppColors.secondaryBlue,
-                              shape: BoxShape.circle,
-                            ),
-                            rangeHighlightColor: AppColors.lightBlue,
-                            todayTextStyle: GoogleFonts.poppins(
-                              color: AppColors.primaryDarkBlue,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            defaultTextStyle: GoogleFonts.poppins(),
-                            weekendTextStyle: GoogleFonts.poppins(
-                              color: Colors.red,
-                            ),
-                            outsideTextStyle: GoogleFonts.poppins(
-                              color: Colors.grey.shade400,
-                            ),
-                          ),
-                          headerStyle: HeaderStyle(
-                            titleTextStyle: GoogleFonts.poppins(
-                              color: AppColors.primaryDarkBlue,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            formatButtonVisible: false,
-                            titleCentered: true,
-                            leftChevronIcon: Icon(
-                              Icons.chevron_left,
-                              color: AppColors.primaryDarkBlue,
-                            ),
-                            rightChevronIcon: Icon(
-                              Icons.chevron_right,
-                              color: AppColors.primaryDarkBlue,
-                            ),
-                          ),
-                          daysOfWeekStyle: DaysOfWeekStyle(
-                            weekdayStyle: GoogleFonts.poppins(
-                              color: AppColors.primaryDarkBlue,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            weekendStyle: GoogleFonts.poppins(
-                              color: Colors.red,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        if (_selectedStartDate != null ||
-                            _selectedEndDate != null)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: Text(
-                              _selectedStartDate != null &&
-                                      _selectedEndDate != null
-                                  ? 'Filter: ${DateFormat('dd MMM yyyy').format(_selectedStartDate!)} - ${DateFormat('dd MMM yyyy').format(_selectedEndDate!)}'
-                                  : _selectedStartDate != null
-                                  ? 'Filter: ${DateFormat('dd MMM yyyy').format(_selectedStartDate!)}'
-                                  : 'Filter: ${DateFormat('dd MMM yyyy').format(_selectedEndDate!)}',
-                              style: GoogleFonts.poppins(
-                                color: AppColors.primaryDarkBlue,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        Row(
-                          children: [
-                            // Tombol Reset Filter dengan gradient outline
-                            Expanded(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(50),
-                                  gradient: AppColors.buttonGradient,
-                                ),
-                                child: Container(
-                                  margin: const EdgeInsets.all(2),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(50),
-                                    color: Colors.white,
-                                  ),
-                                  child: OutlinedButton(
-                                    onPressed: _clearFilter,
-                                    style: OutlinedButton.styleFrom(
-                                      backgroundColor: Colors.transparent,
-                                      foregroundColor:
-                                          AppColors.primaryDarkBlue,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(50),
-                                      ),
-                                      side: const BorderSide(
-                                        color: Colors.transparent,
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 14,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      'Reset Filter',
-                                      style: GoogleFonts.poppins(
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
+        child: Column(
+          children: [
+            // Kalender Filter dengan animasi yang lebih smooth
+            AnimatedSize(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              child: _isExpanded ? _buildCalendarSection() : const SizedBox(),
+            ),
 
-                            // Tombol Terapkan Filter dengan gradient
-                            Expanded(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  gradient: AppColors.buttonGradient,
-                                  borderRadius: BorderRadius.circular(50),
-                                ),
-                                child: ElevatedButton(
-                                  onPressed: _applyDateFilter,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.transparent,
-                                    shadowColor: Colors.transparent,
-                                    foregroundColor: AppColors.neutralWhite,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(50),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 16,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    'Terapkan Filter',
-                                    style: GoogleFonts.poppins(
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                secondChild: Container(),
-              ),
+            // Status Legend
+            _buildStatusLegend(),
 
-              // Header Status Legend
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 8,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildStatusLegend(
-                      color: _tepatWaktuColor,
-                      text: 'Tepat Waktu',
-                    ),
-                    _buildStatusLegend(
-                      color: _terlambatColor,
-                      text: 'Terlambat',
-                    ),
-                    _buildStatusLegend(
-                      color: _tidakHadirColor,
-                      text: 'Tidak Hadir',
-                    ),
-                  ],
-                ),
-              ),
-
-              // Daftar Riwayat
-              FutureBuilder<RiwayatAbsen>(
+            // Daftar Riwayat dengan Expanded dan padding untuk navbar
+            Expanded(
+              child: FutureBuilder<RiwayatAbsen>(
                 future: _historyFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 100),
-                      child: Center(child: CircularProgressIndicator()),
-                    );
+                    return _buildLoadingState();
                   } else if (snapshot.hasError) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 100),
-                      child: Center(child: Text('Error: ${snapshot.error}')),
-                    );
+                    return _buildErrorState(snapshot.error.toString());
                   } else if (snapshot.hasData) {
                     final data =
                         _selectedStartDate != null && _selectedEndDate != null
@@ -376,108 +158,389 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                         : snapshot.data!.data;
 
                     if (data.isEmpty) {
-                      return const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 100),
-                        child: Center(
-                          child: Text(
-                            'Tidak ada data absensi',
-                            style: TextStyle(color: AppColors.neutralDarkGray),
-                          ),
-                        ),
-                      );
+                      return _buildEmptyState();
                     }
 
-                    return ListView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount: data.length,
-                      itemBuilder: (context, index) {
-                        final absen = data[index];
-                        return _buildAbsenCard(absen);
-                      },
-                    );
+                    return _buildAbsenList(data);
                   } else {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 100),
-                      child: Center(child: Text('Tidak ada data')),
-                    );
+                    return _buildEmptyState();
                   }
                 },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildStatusLegend({required Color color, required String text}) {
+  Widget _buildCalendarSection() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            TableCalendar(
+              firstDay: DateTime.now().subtract(const Duration(days: 365)),
+              lastDay: DateTime.now().add(const Duration(days: 365)),
+              focusedDay: _focusedDay,
+              selectedDayPredicate: (day) {
+                return isSameDay(_selectedStartDate, day) ||
+                    isSameDay(_selectedEndDate, day);
+              },
+              rangeStartDay: _selectedStartDate,
+              rangeEndDay: _selectedEndDate,
+              onDaySelected: (selectedDay, focusedDay) {
+                setState(() {
+                  _focusedDay = focusedDay;
+                  if (_selectedStartDate == null) {
+                    _selectedStartDate = selectedDay;
+                  } else if (_selectedEndDate == null) {
+                    _selectedEndDate = selectedDay;
+                    if (_selectedStartDate!.isAfter(_selectedEndDate!)) {
+                      DateTime temp = _selectedStartDate!;
+                      _selectedStartDate = _selectedEndDate;
+                      _selectedEndDate = temp;
+                    }
+                  } else {
+                    _selectedStartDate = selectedDay;
+                    _selectedEndDate = null;
+                  }
+                });
+              },
+              calendarStyle: CalendarStyle(
+                selectedDecoration: BoxDecoration(
+                  gradient: AppColors.buttonGradient,
+                  shape: BoxShape.circle,
+                ),
+                rangeStartDecoration: BoxDecoration(
+                  gradient: AppColors.buttonGradient,
+                  shape: BoxShape.circle,
+                ),
+                rangeEndDecoration: BoxDecoration(
+                  gradient: AppColors.buttonGradient,
+                  shape: BoxShape.circle,
+                ),
+                rangeHighlightColor: AppColors.primaryDarkBlue.withOpacity(0.1),
+                todayDecoration: BoxDecoration(
+                  color: AppColors.primaryDarkBlue.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                todayTextStyle: GoogleFonts.poppins(
+                  color: AppColors.primaryDarkBlue,
+                  fontWeight: FontWeight.w600,
+                ),
+                defaultTextStyle: GoogleFonts.poppins(
+                  color: Colors.black87,
+                  fontSize: 14,
+                ),
+                weekendTextStyle: GoogleFonts.poppins(
+                  color: Colors.red,
+                  fontSize: 14,
+                ),
+                outsideTextStyle: GoogleFonts.poppins(
+                  color: Colors.grey.shade400,
+                  fontSize: 14,
+                ),
+              ),
+              headerStyle: HeaderStyle(
+                titleTextStyle: GoogleFonts.poppins(
+                  color: AppColors.primaryDarkBlue,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+                formatButtonVisible: false,
+                titleCentered: true,
+                leftChevronIcon: Icon(
+                  Icons.chevron_left,
+                  color: AppColors.primaryDarkBlue,
+                ),
+                rightChevronIcon: Icon(
+                  Icons.chevron_right,
+                  color: AppColors.primaryDarkBlue,
+                ),
+              ),
+              daysOfWeekStyle: DaysOfWeekStyle(
+                weekdayStyle: GoogleFonts.poppins(
+                  color: AppColors.primaryDarkBlue,
+                  fontWeight: FontWeight.w500,
+                ),
+                weekendStyle: GoogleFonts.poppins(
+                  color: Colors.red,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            if (_selectedStartDate != null || _selectedEndDate != null)
+              _buildFilterInfo(),
+
+            const SizedBox(height: 8),
+            _buildFilterButtons(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterInfo() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.primaryDarkBlue.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        _selectedStartDate != null && _selectedEndDate != null
+            ? 'Filter: ${DateFormat('dd MMM yyyy').format(_selectedStartDate!)} - ${DateFormat('dd MMM yyyy').format(_selectedEndDate!)}'
+            : _selectedStartDate != null
+            ? 'Filter: ${DateFormat('dd MMM yyyy').format(_selectedStartDate!)}'
+            : 'Filter: ${DateFormat('dd MMM yyyy').format(_selectedEndDate!)}',
+        style: GoogleFonts.poppins(
+          color: AppColors.primaryDarkBlue,
+          fontWeight: FontWeight.w500,
+          fontSize: 12,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterButtons() {
     return Row(
       children: [
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        Expanded(
+          child: OutlinedButton(
+            onPressed: _clearFilter,
+            style: OutlinedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: AppColors.primaryDarkBlue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              side: BorderSide(color: AppColors.primaryDarkBlue, width: 1.5),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+            child: Text(
+              'Reset Filter',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
+              ),
+            ),
+          ),
         ),
-        const SizedBox(width: 4),
-        Text(
-          text,
-          style: GoogleFonts.poppins(
-            fontSize: 10,
-            color: AppColors.neutralDarkGray,
+        const SizedBox(width: 12),
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: AppColors.buttonGradient,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryDarkBlue.withOpacity(0.3),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: ElevatedButton(
+              onPressed: _applyDateFilter,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              child: Text(
+                'Terapkan Filter',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                ),
+              ),
+            ),
           ),
         ),
       ],
     );
   }
 
+  Widget _buildStatusLegend() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildStatusLegendItem(_tepatWaktuColor, 'Tepat Waktu'),
+          _buildStatusLegendItem(_terlambatColor, 'Terlambat'),
+          _buildStatusLegendItem(_tidakHadirColor, 'Tidak Hadir'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusLegendItem(Color color, String text) {
+    return Flexible(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              text,
+              style: GoogleFonts.poppins(
+                fontSize: 11,
+                color: Colors.black87,
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(
+              AppColors.primaryDarkBlue,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Memuat data...',
+            style: GoogleFonts.poppins(color: AppColors.neutralDarkGray),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, size: 48, color: Colors.red),
+          const SizedBox(height: 16),
+          Text(
+            'Terjadi kesalahan',
+            style: GoogleFonts.poppins(
+              color: AppColors.neutralDarkGray,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            error,
+            style: GoogleFonts.poppins(
+              color: AppColors.neutralGray,
+              fontSize: 12,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.history_toggle_off,
+            size: 48,
+            color: AppColors.neutralGray,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Tidak ada data absensi',
+            style: GoogleFonts.poppins(
+              color: AppColors.neutralDarkGray,
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAbsenList(List<Datum> data) {
+    return ListView.builder(
+      padding: const EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 8,
+        bottom: 80, // Padding untuk menghindari tertutup navbar
+      ),
+      itemCount: data.length,
+      itemBuilder: (context, index) {
+        final absen = data[index];
+        return _buildAbsenCard(absen);
+      },
+    );
+  }
+
   Widget _buildAbsenCard(Datum absen) {
-    final dateFormat = DateFormat('dd MMMM yyyy');
+    final dateFormat = DateFormat('EEEE, dd MMMM yyyy', 'id_ID');
     final timeFormat = DateFormat('HH:mm');
-    final checkInTime = absen.checkInTime;
-    final checkOutTime = absen.checkOutTime;
 
-    Color statusColor;
-    Color statusLightColor;
-    IconData statusIcon;
-    String statusText;
-    String statusDetail;
+    Map<String, dynamic> statusInfo = _getStatusInfo(absen);
 
-    if (absen.alasanIzin != null && absen.alasanIzin.toString().isNotEmpty) {
-      statusColor = _tidakHadirColor;
-      statusLightColor = _tidakHadirLightColor;
-      statusIcon = Icons.event_busy;
-      statusText = 'Tidak Hadir';
-      statusDetail = 'Izin: ${absen.alasanIzin}';
-    } else if (checkInTime.isNotEmpty) {
-      final checkInDateTime = DateTime.parse('2024-01-01 $checkInTime');
-      final eightAM = DateTime(2024, 1, 1, 8, 0);
-
-      if (checkInDateTime.isBefore(eightAM)) {
-        statusColor = _tepatWaktuColor;
-        statusLightColor = _tepatWaktuLightColor;
-        statusIcon = Icons.check_circle;
-        statusText = 'Hadir';
-        statusDetail = 'Tepat Waktu';
-      } else {
-        statusColor = _terlambatColor;
-        statusLightColor = _terlambatLightColor;
-        statusIcon = Icons.access_time;
-        statusText = 'Hadir';
-        statusDetail = 'Terlambat';
-      }
-    } else {
-      statusColor = _tidakHadirColor;
-      statusLightColor = _tidakHadirLightColor;
-      statusIcon = Icons.cancel;
-      statusText = 'Tidak Hadir';
-      statusDetail = 'Alpha';
-    }
-
-    return Card(
-      margin: const EdgeInsets.all(16),
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -487,12 +550,14 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  dateFormat.format(absen.attendanceDate),
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primaryDarkBlue,
+                Expanded(
+                  child: Text(
+                    dateFormat.format(absen.attendanceDate),
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primaryDarkBlue,
+                    ),
                   ),
                 ),
                 Container(
@@ -501,21 +566,24 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: statusLightColor.withOpacity(0.2),
+                    color: statusInfo['lightColor'],
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: statusColor),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(statusIcon, size: 16, color: statusColor),
+                      Icon(
+                        statusInfo['icon'],
+                        size: 14,
+                        color: statusInfo['color'],
+                      ),
                       const SizedBox(width: 4),
                       Text(
-                        statusText,
+                        statusInfo['text'],
                         style: GoogleFonts.poppins(
-                          color: statusColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                          color: statusInfo['color'],
+                          fontWeight: FontWeight.w600,
+                          fontSize: 11,
                         ),
                       ),
                     ],
@@ -523,114 +591,167 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
 
-            // Status detail
-            Text(
-              statusDetail,
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                color: statusColor,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Waktu Masuk dan Pulang dalam satu baris
-            if (checkInTime.isNotEmpty ||
-                (checkOutTime != null && checkOutTime!.isNotEmpty))
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  if (checkInTime.isNotEmpty)
-                    _buildTimeColumn(
-                      // Icons.login,
-                      'Masuk',
-                      timeFormat.format(
-                        DateTime.parse('2024-01-01 $checkInTime'),
-                      ),
-                      statusColor,
-                    ),
-
-                  if (checkInTime.isNotEmpty &&
-                      checkOutTime != null &&
-                      checkOutTime!.isNotEmpty)
-                    const VerticalDivider(width: 20, thickness: 1),
-
-                  if (checkOutTime != null && checkOutTime!.isNotEmpty)
-                    _buildTimeColumn(
-                      // Icons.logout,
-                      'Pulang',
-                      timeFormat.format(
-                        DateTime.parse('2024-01-01 $checkOutTime'),
-                      ),
-                      statusColor,
-                    ),
-                ],
-              ),
-
-            // Lokasi (jika ada)
-            if ((absen.checkInAddress?.isNotEmpty == true) ||
-                (absen.checkOutAddress?.isNotEmpty == true))
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.location_on,
-                      size: 16,
-                      color: AppColors.neutralGray,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        absen.checkInAddress?.isNotEmpty == true
-                            ? absen.checkInAddress!
-                            : absen.checkOutAddress ?? '',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: AppColors.neutralGray,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
+            if (statusInfo['detail'] != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                statusInfo['detail']!,
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  color: statusInfo['color'],
+                  fontStyle: FontStyle.italic,
                 ),
               ),
+            ],
+
+            const SizedBox(height: 16),
+
+            // Waktu Masuk dan Pulang
+            _buildTimeSection(absen, statusInfo['color']),
+
+            // Lokasi (jika ada)
+            if ((absen.checkInAddress.isNotEmpty == true) ||
+                (absen.checkOutAddress?.isNotEmpty == true))
+              _buildLocationSection(absen),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTimeColumn(
-    // IconData icon,
-    String label,
-    String time,
-    Color color,
-  ) {
-    return Column(
+  Map<String, dynamic> _getStatusInfo(Datum absen) {
+    final checkInTime = absen.checkInTime;
+    final checkOutTime = absen.checkOutTime;
+
+    if (absen.alasanIzin != null && absen.alasanIzin.toString().isNotEmpty) {
+      return {
+        'color': _tidakHadirColor,
+        'lightColor': _tidakHadirLightColor,
+        'icon': Icons.event_busy,
+        'text': 'Tidak Hadir',
+        'detail': 'Izin: ${absen.alasanIzin}',
+      };
+    } else if (checkInTime.isNotEmpty) {
+      final checkInDateTime = DateTime.parse('2024-01-01 $checkInTime');
+      final eightAM = DateTime(2024, 1, 1, 8, 0);
+
+      if (checkInDateTime.isBefore(eightAM)) {
+        return {
+          'color': _tepatWaktuColor,
+          'lightColor': _tepatWaktuLightColor,
+          'icon': Icons.check_circle,
+          'text': 'Tepat Waktu',
+          'detail': null,
+        };
+      } else {
+        return {
+          'color': _terlambatColor,
+          'lightColor': _terlambatLightColor,
+          'icon': Icons.access_time,
+          'text': 'Terlambat',
+          'detail': 'Check-in setelah jam 08:00',
+        };
+      }
+    } else {
+      return {
+        'color': _tidakHadirColor,
+        'lightColor': _tidakHadirLightColor,
+        'icon': Icons.cancel,
+        'text': 'Tidak Hadir',
+        'detail': 'Tidak ada check-in',
+      };
+    }
+  }
+
+  Widget _buildTimeSection(Datum absen, Color color) {
+    final timeFormat = DateFormat('HH:mm');
+    final checkInTime = absen.checkInTime;
+    final checkOutTime = absen.checkOutTime;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        // Icon(icon, size: 24, color: color),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            color: AppColors.neutralGray,
-          ),
+        // Kolom Masuk
+        _buildTimeItem(
+          Icons.login,
+          'Masuk',
+          checkInTime.isNotEmpty
+              ? timeFormat.format(DateTime.parse('2024-01-01 $checkInTime'))
+              : '-',
+          checkInTime.isNotEmpty ? color : AppColors.neutralGray,
         ),
-        const SizedBox(height: 2),
-        Text(
-          '$time WIB',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.bold,
-            color: AppColors.primaryDarkBlue,
-            fontSize: 14,
-          ),
+
+        // Pembatas
+        Container(width: 1, height: 40, color: AppColors.neutralLightGray),
+
+        // Kolom Pulang - SELALU DITAMPILKAN
+        _buildTimeItem(
+          Icons.logout,
+          'Pulang',
+          (checkOutTime != null && checkOutTime.isNotEmpty)
+              ? timeFormat.format(DateTime.parse('2024-01-01 $checkOutTime'))
+              : '-',
+          (checkOutTime != null && checkOutTime.isNotEmpty)
+              ? color
+              : AppColors.neutralGray,
         ),
       ],
+    );
+  }
+
+  Widget _buildTimeItem(IconData icon, String label, String time, Color color) {
+    return Expanded(
+      child: Column(
+        children: [
+          Icon(icon, size: 20, color: color),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              color: AppColors.neutralGray,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            time == '-' ? '-' : '$time WIB',
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w600,
+              color: color,
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLocationSection(Datum absen) {
+    final location = absen.checkInAddress.isNotEmpty == true
+        ? absen.checkInAddress
+        : absen.checkOutAddress ?? 'Lokasi tidak tersedia';
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.location_on, size: 14, color: AppColors.neutralGray),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              location,
+              style: GoogleFonts.poppins(
+                fontSize: 11,
+                color: AppColors.neutralGray,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
