@@ -21,7 +21,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
   DateTime? _selectedEndDate;
   List<Datum> _filteredData = [];
   final ScrollController _scrollController = ScrollController();
-  bool _isExpanded = true;
+  bool _isExpanded = false;
 
   // Warna status yang selaras dengan gradient
   final Color _tepatWaktuColor = AppColors.blue;
