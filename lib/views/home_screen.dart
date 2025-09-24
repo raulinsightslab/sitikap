@@ -528,49 +528,49 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 16),
 
           // Jarak dan tombol buka map
-          if (!isIzin)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.location_on, size: 16, color: Colors.grey),
-                    const SizedBox(width: 4),
-                    Text(
-                      "Jarak dari lokasi",
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      "4.98m",
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primaryDarkBlue,
-                      ),
-                    ),
-                  ],
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    // Navigate to absen map screen
-                    context.pushReplacement(Botnav(initialPage: 2));
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryDarkBlue,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text("Buka Map", style: TextStyle(fontSize: 12)),
-                ),
-              ],
-            ),
+          // if (!isIzin)
+          //   Row(
+          //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //     children: [
+          //       Row(
+          //         children: [
+          //           Icon(Icons.location_on, size: 16, color: Colors.grey),
+          //           const SizedBox(width: 4),
+          //           Text(
+          //             "Jarak dari lokasi",
+          //             style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+          //           ),
+          //           const SizedBox(width: 4),
+          //           Text(
+          //             "4.98m",
+          //             style: TextStyle(
+          //               fontSize: 12,
+          //               fontWeight: FontWeight.bold,
+          //               color: AppColors.primaryDarkBlue,
+          //             ),
+          //           ),
+          //         ],
+          //       ),
+          //       ElevatedButton(
+          //         onPressed: () {
+          //           // Navigate to absen map screen
+          //           context.pushReplacement(Botnav(initialPage: 2));
+          //         },
+          //         style: ElevatedButton.styleFrom(
+          //           backgroundColor: AppColors.primaryDarkBlue,
+          //           foregroundColor: Colors.white,
+          //           padding: const EdgeInsets.symmetric(
+          //             horizontal: 16,
+          //             vertical: 8,
+          //           ),
+          //           shape: RoundedRectangleBorder(
+          //             borderRadius: BorderRadius.circular(8),
+          //           ),
+          //         ),
+          //         child: const Text("Buka Map", style: TextStyle(fontSize: 12)),
+          //       ),
+          //     ],
+          //   ),
         ],
       ),
     );
