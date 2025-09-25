@@ -47,6 +47,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   // Page Controller untuk slide form
   final PageController _pageController = PageController();
   int _currentPage = 0;
+  bool obscurePassword = true;
 
   @override
   void initState() {
@@ -518,14 +519,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
           const SizedBox(height: 20),
 
           // Password
-          TextField(
+          TextFormField(
             controller: _passwordController,
-            obscureText: true,
+            obscureText: obscurePassword,
             decoration: InputDecoration(
               labelText: "Password",
               prefixIcon: const Icon(Icons.lock),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  obscurePassword ? Icons.visibility_off : Icons.visibility,
+                ),
+                onPressed: () {
+                  safeSetState(() {
+                    obscurePassword = !obscurePassword;
+                  });
+                },
               ),
               filled: true,
               fillColor: Colors.grey[100],
@@ -534,7 +545,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           const SizedBox(height: 16),
 
           // Konfirmasi Password
-          TextField(
+          TextFormField(
             obscureText: true,
             decoration: InputDecoration(
               labelText: "Konfirmasi Password",

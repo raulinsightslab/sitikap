@@ -294,7 +294,7 @@ class _AbsenMapScreenState extends State<AbsenMapScreen> {
                       },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: (checkIn == "--:--")
-                      ? Colors.green
+                      ? AppColors.blue
                       : (checkOut == "--:--")
                       ? Colors.orange
                       : Colors.grey,
@@ -313,6 +313,7 @@ class _AbsenMapScreenState extends State<AbsenMapScreen> {
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
+                          color: AppColors.neutralWhite,
                         ),
                       ),
               ),

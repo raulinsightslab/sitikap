@@ -142,7 +142,7 @@ class _SplashScreenState extends State<SplashScreen>
                       radius: 80,
                       backgroundColor: Colors.white,
                       backgroundImage: const AssetImage(
-                        "assets/images/ppkd_logo1.png",
+                        "assets/images/logo_sitikap1.png",
                       ),
                     ),
                   ),

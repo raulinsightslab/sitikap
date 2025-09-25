@@ -346,9 +346,9 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     }
-
     final now = DateTime.now();
-    final todayDate = "${now.day} ${_getMonthName(now.month)} ${now.year}";
+    final todayDate =
+        "Rabu, ${now.day} ${_getMonthName(now.month)} ${now.year}";
 
     // Handle status dengan logika yang lebih robust
     final isIzin = todayAttendance?.data?.status == "izin";

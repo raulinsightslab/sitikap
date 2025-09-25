@@ -119,12 +119,12 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           ],
                         ),
                         child: CircleAvatar(
-                          radius: 30,
+                          radius: 90,
                           backgroundColor: AppColors.neutralWhite,
                           child: ClipOval(
                             child: Image.asset(
-                              "assets/images/ppkd_logo1.png",
-                              height: 120,
+                              "assets/images/logo_sitikap1.png",
+                              height: 200,
                               fit: BoxFit.cover,
                             ),
                           ),

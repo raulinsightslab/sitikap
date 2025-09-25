@@ -1,4 +1,4 @@
-package com.example.sitikap
+package com.ppkd.sitikap
 
 import io.flutter.embedding.android.FlutterActivity
 

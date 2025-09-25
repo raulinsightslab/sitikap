@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:sitikap/utils/colors.dart';
-import 'package:sitikap/views/absen1_map_screen.dart';
 import 'package:sitikap/views/absen_map_screen.dart';
 import 'package:sitikap/views/home_screen.dart';
 import 'package:sitikap/views/izin_screen.dart';
